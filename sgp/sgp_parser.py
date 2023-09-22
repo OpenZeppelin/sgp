@@ -1,13 +1,16 @@
+import os
+import json
 from typing import Dict
 
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.InputStream import InputStream as ANTLRInputStream
 
-from out.SolidityLexer import SolidityLexer
-from out.SolidityParser import SolidityParser
+from parser.SolidityLexer import SolidityLexer
+from parser.SolidityParser import SolidityParser
 
 from sgp_visitor import SGPVisitorOptions, SGPVisitor
 from sgp_error_listener import SGPErrorListener
+from ast_node_types import ASTNodeJSONEncoder
 from tokens import build_token_list
 
 class ParserError(Exception):
@@ -17,7 +20,7 @@ class ParserError(Exception):
         self.message = f"{error['message']} ({error['line']}:{error['column']})"
         self.errors = errors
 
-def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions()) -> Dict:
+def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions(), dump_json: bool = False, dump_path: str = "./out") -> Dict:
     input_stream = ANTLRInputStream(input_string)
     lexer = SolidityLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
@@ -52,4 +55,8 @@ def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions()) -
     if options.tokens:
         ast["tokens"] = token_list
 
+    if dump_json:
+        os.makedirs(dump_path, exist_ok=True)
+        with open(os.path.join(dump_path, "ast.json"), "w") as f:
+            json.dump(ast, f, indent=4, cls=ASTNodeJSONEncoder)
     return ast

@@ -1,10 +1,13 @@
 from typing import Any, List, Optional, Tuple, Union
+
 from antlr4.tree.Tree import ErrorNode
 from antlr4 import ParserRuleContext
 from antlr4.tree.Tree import ParseTree
-from out.SolidityParser import SolidityParser as SP
-from out.SolidityVisitor import SolidityVisitor
-import ast_types as AST
+
+from parser.SolidityParser import SolidityParser as SP
+from parser.SolidityVisitor import SolidityVisitor
+
+import ast_node_types as AST
 
 
 class SGPVisitorOptions:
@@ -47,7 +50,7 @@ class SGPVisitor(SolidityVisitor):
         children = [child for child in ctx.children if not isinstance(child, ErrorNode)]
 
         node = AST.SourceUnit(
-            loc=None, children=[self.visit(child) for child in children[:-1]]
+            children=[self.visit(child) for child in children[:-1]]
         )
 
         return self._add_meta(node, ctx)
@@ -65,10 +68,10 @@ class SGPVisitor(SolidityVisitor):
 
         node = AST.ContractDefinition(
             name=name,
-            baseContracts=list(
+            base_contracts=list(
                 map(self.visitInheritanceSpecifier, ctx.inheritanceSpecifier())
             ),
-            subNodes=list(map(self.visit, ctx.contractPart())),
+            children=list(map(self.visit, ctx.contractPart())),
             kind=kind,
         )
 
@@ -125,7 +128,7 @@ class SGPVisitor(SolidityVisitor):
         )
 
         node = AST.StateVariableDeclaration(
-            variables=[self._add_meta(decl, ctx)], initialValue=expression
+            variables=[self._add_meta(decl, ctx)], initial_value=expression
         )
 
         return self._add_meta(node, ctx)
@@ -422,7 +425,7 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.UserDefinedTypeNameContext
     ) -> AST.UserDefinedTypeName:
         node = AST.UserDefinedTypeName(
-            type="UserDefinedTypeName", namePath=self._toText(ctx)
+            type="UserDefinedTypeName", name_path=self._toText(ctx)
         )
 
         return self._add_meta(node, ctx)
@@ -504,7 +507,7 @@ class SGPVisitor(SolidityVisitor):
 
         node = AST.InheritanceSpecifier(
             type="InheritanceSpecifier",
-            baseName=self.visitUserDefinedTypeName(ctx.userDefinedTypeName()),
+            base_name=self.visitUserDefinedTypeName(ctx.userDefinedTypeName()),
             arguments=args,
         )
 
@@ -1087,9 +1090,9 @@ class SGPVisitor(SolidityVisitor):
 
         node = AST.FileLevelConstant(
             type="FileLevelConstant",
-            typeName=type,
+            type_name=type,
             name=name,
-            initialValue=expression,
+            initial_value=expression,
             isDeclaredConst=True,
             isImmutable=False,
         )
@@ -1294,11 +1297,11 @@ class SGPVisitor(SolidityVisitor):
         node = AST.ImportDirective(
             type="ImportDirective",
             path=path,
-            pathLiteral=self._add_meta(pathLiteral, ctx.importPath()),
-            unitAlias=unitAlias,
-            unitAliasIdentifier=unitAliasIdentifier,
-            symbolAliases=symbolAliases,
-            symbolAliasesIdentifiers=symbolAliasesIdentifiers,
+            path_literal=self._add_meta(pathLiteral, ctx.importPath()),
+            unit_alias=unitAlias,
+            unit_alias_identifier=unitAliasIdentifier,
+            symbol_aliases=symbolAliases,
+            symbol_aliases_identifiers=symbolAliasesIdentifiers,
         )
 
         return self._add_meta(node, ctx)
@@ -1683,7 +1686,7 @@ class SGPVisitor(SolidityVisitor):
     def _add_meta(
         self, node: Union[AST.BaseASTNode, AST.NameValueList], ctx
     ) -> Union[AST.BaseASTNode, AST.NameValueList]:
-        node_with_meta = {"type": node.type}
+        # node_with_meta = {"type": node.type}
 
         if self._options.loc:
             node.add_loc(self._loc(ctx))
@@ -1691,7 +1694,7 @@ class SGPVisitor(SolidityVisitor):
         if self._options.range:
             node.add_range(self._range(ctx))
 
-        return {**node_with_meta, **node.__dict__}
+        return node
 
     def _map_commas_to_nulls(
         self, children: List[Optional[ParseTree]]

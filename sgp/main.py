@@ -8,7 +8,7 @@ def main():
         }
     """
     try:
-        ast = sgp_parser.parse(input)
+        ast = sgp_parser.parse(input, dump_json=True)
         print(ast)
     except Exception as e:
         print(e)
