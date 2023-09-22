@@ -2,10 +2,31 @@ import sgp_parser
 
 def main():
     input = """
-        contract test {
-            uint256 a;
-            function f() {}
-        }
+        // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+struct FreeStruct {
+    uint256 x;
+}
+
+enum FreeEnum {
+    A,
+    B,
+    C
+}
+
+contract X {
+
+    struct NotFreeStruct {
+        address someAddress;
+    }
+
+    enum NotFreeEnum {
+        D, E, G
+    }
+
+}
+
     """
     try:
         ast = sgp_parser.parse(input, dump_json=True)

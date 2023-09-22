@@ -144,7 +144,6 @@ class SGPVisitor(SolidityVisitor):
         identifierCtx = ctx.identifier()
 
         node = AST.VariableDeclaration(
-            type="VariableDeclaration",
             typeName=self.visitTypeName(ctx.typeName()),
             name=self._toText(identifierCtx),
             identifier=self.visitIdentifier(identifierCtx),
@@ -356,7 +355,6 @@ class SGPVisitor(SolidityVisitor):
 
     def visitEnumDefinition(self, ctx: SP.EnumDefinitionContext) -> AST.EnumDefinition:
         node = AST.EnumDefinition(
-            type="EnumDefinition",
             name=self._toText(ctx.identifier()),
             members=[self.visitEnumValue(x) for x in ctx.enumValue()],
         )
@@ -364,7 +362,7 @@ class SGPVisitor(SolidityVisitor):
         return self._add_meta(node, ctx)
 
     def visitEnumValue(self, ctx: SP.EnumValueContext) -> AST.EnumValue:
-        node = AST.EnumValue(type="EnumValue", name=self._toText(ctx.identifier()))
+        node = AST.EnumValue(name=self._toText(ctx.identifier()))
         return self._add_meta(node, ctx)
 
     def visitElementaryTypeName(
@@ -490,7 +488,7 @@ class SGPVisitor(SolidityVisitor):
             value = " ".join([self._toText(x) for x in versionContext.children])
 
         node = AST.PragmaDirective(
-            type="PragmaDirective", name=self._toText(ctx.pragmaName()), value=value
+            name=self._toText(ctx.pragmaName()), value=value
         )
 
         return self._add_meta(node, ctx)
@@ -675,7 +673,6 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.StructDefinitionContext
     ) -> AST.StructDefinition:
         node = AST.StructDefinition(
-            type="StructDefinition",
             name=self._toText(ctx.identifier()),
             members=[
                 self.visitVariableDeclaration(x) for x in ctx.variableDeclaration()
