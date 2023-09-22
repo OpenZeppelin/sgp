@@ -608,17 +608,14 @@ class NameValueList(BaseASTNode):
 
 from typing import TypeVar, Dict, Callable
 
-class ASTNode:
-    pass
-
 # Define a dictionary mapping AST node types to their corresponding types
 ASTNodeTypeString = str  # Replace with actual string union of node types
-U = TypeVar('U', bound=ASTNode)
+U = TypeVar('U', bound="ASTNode")
 ASTMap = Dict[ASTNodeTypeString, U]
 
 # Define a dictionary type for visitor functions
-ASTVisitorEnter = Dict[ASTNodeTypeString, Callable[[U, Optional[ASTNode]], None]]
-ASTVisitorExit = Dict[ASTNodeTypeString, Callable[[U, Optional[ASTNode]], None]]
+ASTVisitorEnter = Dict[ASTNodeTypeString, Callable[[U, Optional["ASTNode"]], None]]
+ASTVisitorExit = Dict[ASTNodeTypeString, Callable[[U, Optional["ASTNode"]], None]]
 
 # Combine visitor dictionaries into a single visitor object
 class ASTVisitor:
@@ -670,194 +667,182 @@ from typing import List, Optional, Union
 class ASTNode:
     pass
 
-class AssemblyItem:
-    pass
-
-class AssemblyExpression:
-    pass
-
-class Expression:
-    pass
-
-class PrimaryExpression:
-    pass
-
-class SimpleStatement:
-    pass
-
-class TypeName:
-    pass
-
-class Statement:
-    pass
-
-class SourceUnit(ASTNode):
-    pass
-
-class PragmaDirective(ASTNode):
-    pass
-
-class ImportDirective(ASTNode):
-    pass
-
-class ContractDefinition(ASTNode):
-    pass
-
-class InheritanceSpecifier(ASTNode):
-    pass
-
-class StateVariableDeclaration(ASTNode):
-    pass
-
-class UsingForDeclaration(ASTNode):
-    pass
-
-class StructDefinition(ASTNode):
-    pass
-
-class ModifierDefinition(ASTNode):
-    pass
-
-class ModifierInvocation(ASTNode):
-    pass
-
-class FunctionDefinition(ASTNode):
-    pass
-
-class EventDefinition(ASTNode):
-    pass
-
-class CustomErrorDefinition(ASTNode):
-    pass
-
-class EnumValue(ASTNode):
-    pass
-
-class EnumDefinition(ASTNode):
-    pass
-
-class VariableDeclaration(ASTNode):
-    pass
-
-class TypeName(ASTNode):
-    pass
-
-class UserDefinedTypeName(ASTNode):
-    pass
-
-class Mapping(ASTNode):
-    pass
-
-class FunctionTypeName(ASTNode):
-    pass
-
-class Block(ASTNode):
-    pass
-
-class Statement(ASTNode):
-    pass
-
-class ElementaryTypeName(ASTNode):
-    pass
-
-class AssemblyBlock(ASTNode):
-    pass
-
-class AssemblyCall(ASTNode):
-    pass
-
-class AssemblyLocalDefinition(ASTNode):
-    pass
-
-class AssemblyAssignment(ASTNode):
-    pass
-
-class AssemblyStackAssignment(ASTNode):
-    pass
-
-class LabelDefinition(ASTNode):
-    pass
-
-class AssemblySwitch(ASTNode):
-    pass
-
-class AssemblyCase(ASTNode):
-    pass
-
-class AssemblyFunctionDefinition(ASTNode):
-    pass
-
-class AssemblyFor(ASTNode):
-    pass
-
-class AssemblyIf(ASTNode):
-    pass
-
-class AssemblyLiteral(ASTNode):
-    pass
-
-class TupleExpression(ASTNode):
-    pass
-
-class BinaryOperation(ASTNode):
-    pass
-
-class Conditional(ASTNode):
-    pass
-
-class IndexAccess(ASTNode):
-    pass
-
-class IndexRangeAccess(ASTNode):
-    pass
-
 class AssemblyItem(ASTNode):
+    pass
+
+class AssemblyExpression(AssemblyItem):
     pass
 
 class Expression(ASTNode):
     pass
 
-class NameValueList(ASTNode):
+class PrimaryExpression(Expression):
     pass
 
-class AssemblyMemberAccess(ASTNode):
+class SimpleStatement:
     pass
 
-class CatchClause(ASTNode):
+# class TypeName:
+#     pass
+
+# class Statement:
+#     pass
+
+# class SourceUnit(ASTNode):
+#     pass
+
+# class PragmaDirective(ASTNode):
+#     pass
+
+# class ImportDirective(ASTNode):
+#     pass
+
+# class ContractDefinition(ASTNode):
+#     pass
+
+# class InheritanceSpecifier(ASTNode):
+#     pass
+
+# class StateVariableDeclaration(ASTNode):
+#     pass
+
+# class UsingForDeclaration(ASTNode):
+#     pass
+
+# class StructDefinition(ASTNode):
+#     pass
+
+# class ModifierDefinition(ASTNode):
+#     pass
+
+# class ModifierInvocation(ASTNode):
+#     pass
+
+# class FunctionDefinition(ASTNode):
+#     pass
+
+# class EventDefinition(ASTNode):
+#     pass
+
+# class CustomErrorDefinition(ASTNode):
+#     pass
+
+# class EnumValue(ASTNode):
+#     pass
+
+# class EnumDefinition(ASTNode):
+#     pass
+
+# class VariableDeclaration(ASTNode):
+#     pass
+
+# class TypeName(ASTNode):
+#     pass
+
+# class UserDefinedTypeName(ASTNode):
+#     pass
+
+# class Mapping(ASTNode):
+#     pass
+
+# class FunctionTypeName(ASTNode):
+#     pass
+
+# class Block(ASTNode):
+#     pass
+
+class Statement(ASTNode):
     pass
 
-class FileLevelConstant(ASTNode):
-    pass
+# class ElementaryTypeName(ASTNode):
+#     pass
 
-class TypeDefinition(ASTNode):
-    pass
+# class AssemblyBlock(ASTNode):
+#     pass
 
-class BooleanLiteral(PrimaryExpression):
-    pass
+# class AssemblyCall(ASTNode):
+#     pass
 
-class HexLiteral(PrimaryExpression):
-    pass
+# class AssemblyLocalDefinition(ASTNode):
+#     pass
 
-class StringLiteral(PrimaryExpression):
-    pass
+# class AssemblyAssignment(ASTNode):
+#     pass
 
-class NumberLiteral(PrimaryExpression):
-    pass
+# class AssemblyStackAssignment(ASTNode):
+#     pass
 
-class Identifier(PrimaryExpression):
-    pass
+# class LabelDefinition(ASTNode):
+#     pass
 
-class TupleExpression(PrimaryExpression):
-    pass
+# class AssemblySwitch(ASTNode):
+#     pass
 
-class TypeName(PrimaryExpression):
-    pass
+# class AssemblyCase(ASTNode):
+#     pass
 
-class SimpleStatement(SimpleStatement):
-    pass
+# class AssemblyFunctionDefinition(ASTNode):
+#     pass
 
-class TypeName(TypeName):
-    pass
+# class AssemblyFor(ASTNode):
+#     pass
 
-class Statement(Statement):
-    pass
+# class AssemblyIf(ASTNode):
+#     pass
+
+# class AssemblyLiteral(ASTNode):
+#     pass
+
+# class TupleExpression(ASTNode):
+#     pass
+
+# class BinaryOperation(ASTNode):
+#     pass
+
+# class Conditional(ASTNode):
+#     pass
+
+# class IndexAccess(ASTNode):
+#     pass
+
+# class IndexRangeAccess(ASTNode):
+#     pass
+
+# class NameValueList(ASTNode):
+#     pass
+
+# class AssemblyMemberAccess(ASTNode):
+#     pass
+
+# class CatchClause(ASTNode):
+#     pass
+
+# class FileLevelConstant(ASTNode):
+#     pass
+
+# class TypeDefinition(ASTNode):
+#     pass
+
+# class BooleanLiteral(PrimaryExpression):
+#     pass
+
+# class HexLiteral(PrimaryExpression):
+#     pass
+
+# class StringLiteral(PrimaryExpression):
+#     pass
+
+# class NumberLiteral(PrimaryExpression):
+#     pass
+
+# class Identifier(PrimaryExpression):
+#     pass
+
+# class TupleExpression(PrimaryExpression):
+#     pass
+
+# class TypeName(PrimaryExpression):
+#     pass
+
+# class TypeName(TypeName):
+#     pass

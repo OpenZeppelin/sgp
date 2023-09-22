@@ -4,7 +4,7 @@ from antlr4 import ParserRuleContext
 from antlr4.tree.Tree import ParseTreeVisitor
 from antlr4.tree.Tree import ParseTree
 from out.SolidityParser import SolidityParser as SP
-from out.SolidityListener import SolidityListener
+from out.SolidityVisitor import SolidityVisitor
 from common_types import ParseOptions
 import ast_types as AST
 
@@ -16,7 +16,7 @@ class SourceLocation:
 class WithMeta:
     pass
 
-class ASTBuilder(ParseTreeVisitor, SolidityListener):
+class ASTBuilder(SolidityVisitor):
     def __init__(self, options: ParseOptions):
         super().__init__()
         self.result = None
@@ -33,11 +33,14 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         children = [child for child in ctx.children if not isinstance(child, ErrorNode)]
 
         node = AST.SourceUnit(
-            type='SourceUnit',
+            loc=SourceLocation(
+                start=(0, 0),
+                end=(0, 0)
+            ),
             children=[self.visit(child) for child in children[:-1]]
         )
 
-        result = self._addMeta(node, ctx)
+        result = self._add_meta(node, ctx)
         self.result = result
         return result
 
@@ -51,14 +54,13 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         self._currentContract = name
 
         node = AST.ContractDefinition(
-            type='ContractDefinition',
             name=name,
             baseContracts=list(map(self.visitInheritanceSpecifier, ctx.inheritanceSpecifier())),
             subNodes=list(map(self.visit, ctx.contractPart())),
             kind=kind
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitStateVariableDeclaration(self, ctx: SP.StateVariableDeclarationContext):
         type = self.visitTypeName(ctx.typeName())
@@ -94,7 +96,6 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             isImmutable = True
 
         decl = AST.StateVariableDeclarationVariable(
-            type='VariableDeclaration',
             typeName=type,
             name=name,
             identifier=self.visitIdentifier(iden),
@@ -109,12 +110,11 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         )
 
         node = AST.StateVariableDeclaration(
-            type='StateVariableDeclaration',
-            variables=[self._addMeta(decl, ctx)],
+            variables=[self._add_meta(decl, ctx)],
             initialValue=expression
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitVariableDeclaration(self, ctx: SP.VariableDeclarationContext) -> AST.VariableDeclaration:
         storageLocation = None
@@ -135,7 +135,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=None
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
 
     def visitVariableDeclarationStatement(self, ctx: SP.VariableDeclarationStatementContext) -> AST.VariableDeclarationStatement:
@@ -162,7 +162,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             initialValue=initialValue
         )
         
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitStatement(self, ctx: SP.StatementContext) -> AST.Statement:
         return self.visit(ctx.getChild(0))  # Assuming the child type is Statement & WithMeta
@@ -172,7 +172,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
 
     def visitEventDefinition(self, ctx: SP.EventDefinitionContext) -> AST.EventDefinition:
         parameters = [
-            self._addMeta(
+            self._add_meta(
                 AST.VariableDeclaration(
                     type='VariableDeclaration',
                     typeName=self.visitTypeName(paramCtx.typeName()),
@@ -195,15 +195,14 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             isAnonymous=bool(ctx.AnonymousKeyword() is not None)
         )
         
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitBlock(self, ctx: SP.BlockContext) -> AST.Block:
         node = AST.Block(
-            type='Block',
             statements=[self.visitStatement(x) for x in ctx.statement()]
         )
         
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitParameter(self, ctx: SP.ParameterContext) -> AST.VariableDeclaration:
         storageLocation = self._toText(ctx.storageLocation()) if ctx.storageLocation() else None
@@ -220,7 +219,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=None
         )
         
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitFunctionDefinition(self, ctx: SP.FunctionDefinitionContext) -> AST.FunctionDefinition:
         isConstructor = False
@@ -291,7 +290,6 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             override = [self.visitUserDefinedTypeName(x) for x in overrideSpecifier[0].userDefinedTypeName()]
 
         node = AST.FunctionDefinition(
-            type='FunctionDefinition',
             name=name,
             parameters=parameters,
             returnParameters=returnParameters,
@@ -306,7 +304,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             stateMutability=stateMutability,
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitEnumDefinition(self, ctx: SP.EnumDefinitionContext) -> AST.EnumDefinition:
         node = AST.EnumDefinition(
@@ -315,30 +313,28 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             members=[self.visitEnumValue(x) for x in ctx.enumValue()]
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitEnumValue(self, ctx: SP.EnumValueContext) -> AST.EnumValue:
         node = AST.EnumValue(
             type='EnumValue',
             name=self._toText(ctx.identifier())
         )
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitElementaryTypeName(self, ctx: SP.ElementaryTypeNameContext) -> AST.ElementaryTypeName:
         node = AST.ElementaryTypeName(
-            type='ElementaryTypeName',
             name=self._toText(ctx),
             stateMutability=None
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitIdentifier(self, ctx: SP.IdentifierContext) -> AST.Identifier:
         node = AST.Identifier(
-            type='Identifier',
             name=self._toText(ctx)
         )
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitTypeName(self, ctx: SP.TypeNameContext) -> Union[AST.ArrayTypeName, AST.ElementaryTypeName, AST.UserDefinedTypeName]:
         if ctx.children and len(ctx.children) > 2:
@@ -357,7 +353,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 length=length
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.children and len(ctx.children) == 2:
             node = AST.ElementaryTypeName(
@@ -366,7 +362,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 stateMutability=self._toText(ctx.getChild(1))
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.elementaryTypeName() is not None:
             return self.visitElementaryTypeName(ctx.elementaryTypeName())
@@ -385,7 +381,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             namePath=self._toText(ctx)
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitUsingForDeclaration(self, ctx: SP.UsingForDeclarationContext) -> AST.UsingForDeclaration:
         typeName = None
@@ -424,7 +420,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 operators=operators
             )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitPragmaDirective(self, ctx: SP.PragmaDirectiveContext) -> AST.PragmaDirective:
         # this converts something like >= 0.5.0  <0.7.0
@@ -441,7 +437,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             value=value
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitInheritanceSpecifier(self, ctx: SP.InheritanceSpecifierContext) -> AST.InheritanceSpecifier:
         exprList = ctx.expressionList()
@@ -453,7 +449,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             arguments=args
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitModifierInvocation(self, ctx: SP.ModifierInvocationContext) -> AST.ModifierInvocation:
         exprList = ctx.expressionList()
@@ -468,7 +464,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             name=self._toText(ctx.identifier()),
             arguments=args
         )
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitFunctionTypeName(self, ctx: SP.FunctionTypeNameContext) -> AST.FunctionTypeName:
         parameterTypes = [self.visitFunctionTypeParameter(typeCtx) for typeCtx in ctx.functionTypeParameterList(0).functionTypeParameter()]
@@ -493,7 +489,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             stateMutability=stateMutability
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitFunctionTypeParameter(self, ctx: SP.FunctionTypeParameterContext) -> AST.VariableDeclaration:
         storageLocation = self._toText(ctx.storageLocation()) if ctx.storageLocation() else None
@@ -509,14 +505,14 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=None
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitThrowStatement(self, ctx: SP.ThrowStatementContext) -> AST.ThrowStatement:
         node = AST.ThrowStatement(
             type='ThrowStatement'
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitReturnStatement(self, ctx: SP.ReturnStatementContext) -> AST.ReturnStatement:
         expression = self.visitExpression(ctx.expression()) if ctx.expression() else None
@@ -526,7 +522,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=expression
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitEmitStatement(self, ctx: SP.EmitStatementContext) -> AST.EmitStatement:
         node = AST.EmitStatement(
@@ -534,7 +530,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             eventCall=self.visitFunctionCall(ctx.functionCall())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitCustomErrorDefinition(self, ctx: SP.CustomErrorDefinitionContext) -> AST.CustomErrorDefinition:
         node = AST.CustomErrorDefinition(
@@ -543,7 +539,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             parameters=self.visitParameterList(ctx.parameterList())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitTypeDefinition(self, ctx: SP.TypeDefinitionContext) -> AST.TypeDefinition:
         node = AST.TypeDefinition(
@@ -552,7 +548,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         definition=self.visitElementaryTypeName(ctx.elementaryTypeName())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitRevertStatement(self, ctx: SP.RevertStatementContext) -> AST.RevertStatement:
         node = AST.RevertStatement(
@@ -560,7 +556,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         revertCall=self.visitFunctionCall(ctx.functionCall())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitFunctionCall(self, ctx: SP.FunctionCallContext) -> AST.FunctionCall:
         args = []
@@ -586,7 +582,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             identifiers=identifiers
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitStructDefinition(self, ctx: SP.StructDefinitionContext) -> AST.StructDefinition:
         node = AST.StructDefinition(
@@ -595,7 +591,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             members=[self.visitVariableDeclaration(x) for x in ctx.variableDeclaration()]
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitWhileStatement(self, ctx: SP.WhileStatementContext) -> AST.WhileStatement:
         node = AST.WhileStatement(
@@ -604,7 +600,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visitStatement(ctx.statement())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitDoWhileStatement(self, ctx: SP.DoWhileStatementContext) -> AST.DoWhileStatement:
         node = AST.DoWhileStatement(
@@ -613,7 +609,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visitStatement(ctx.statement())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitIfStatement(self, ctx: SP.IfStatementContext) -> AST.IfStatement:
         trueBody = self.visitStatement(ctx.statement(0))
@@ -629,7 +625,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             falseBody=falseBody
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitTryStatement(self, ctx: SP.TryStatementContext) -> AST.TryStatement:
         returnParameters = None
@@ -647,7 +643,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             catchClauses=catchClauses
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitCatchClause(self, ctx: SP.CatchClauseContext) -> AST.CatchClause:
         parameters = None
@@ -667,7 +663,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         body=self.visitBlock(ctx.block())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitExpressionStatement(self, ctx: SP.ExpressionStatementContext) -> AST.ExpressionStatement:
         if not ctx:
@@ -677,7 +673,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=self.visitExpression(ctx.expression())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitNumberLiteral(self, ctx: SP.NumberLiteralContext) -> AST.NumberLiteral:
         number = self._toText(ctx.getChild(0))
@@ -692,7 +688,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         subdenomination=subdenomination
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitMappingKey(self, ctx: SP.MappingKeyContext) -> Union[AST.ElementaryTypeName, AST.UserDefinedTypeName]:
         if ctx.elementaryTypeName():
@@ -714,7 +710,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             valueName=self.visitIdentifier(mappingValueNameCtx.identifier()) if mappingValueNameCtx else None
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
     
     def visitModifierDefinition(self, ctx: SP.ModifierDefinitionContext) -> AST.ModifierDefinition:
         parameters = None
@@ -742,7 +738,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         override=override
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitUncheckedStatement(self, ctx: SP.UncheckedStatementContext) -> AST.UncheckedStatement:
         node = AST.UncheckedStatement(
@@ -750,7 +746,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             block=self.visitBlock(ctx.block())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
     
     def visitExpression(self, ctx: SP.ExpressionContext) -> AST.Expression:
         op = None
@@ -770,7 +766,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     type='NewExpression',
                     typeName=self.visitTypeName(ctx.typeName())
                 )
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             # prefix operators
             if op in AST.unaryOpValues:
@@ -780,7 +776,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     subExpression=self.visitExpression(ctx.getRuleContext(0, SP.ExpressionContext)),
                     isPrefix=True
                 )
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             op = self._toText(ctx.getChild(1))
 
@@ -792,7 +788,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     subExpression=self.visitExpression(ctx.getRuleContext(0, SP.ExpressionContext)),
                     isPrefix=False
                 )
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
         elif len(ctx.children) == 3:
             # treat parenthesis as no-op
             if self._toText(ctx.getChild(0)) == '(' and self._toText(ctx.getChild(2)) == ')':
@@ -801,7 +797,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     components=[self.visitExpression(ctx.getRuleContext(0, SP.ExpressionContext))],
                     isArray=False
                 )
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             op = self._toText(ctx.getChild(1))
 
@@ -812,7 +808,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     expression=self.visitExpression(ctx.expression(0)),
                     memberName=self._toText(ctx.identifier())
                 )
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             if op in AST.binaryOpValues:
                 node = AST.BinaryOperation(
@@ -821,7 +817,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     left=self.visitExpression(ctx.expression(0)),
                     right=self.visitExpression(ctx.expression(1))
                 )
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
         elif len(ctx.children) == 4:
             # function call
             if self._toText(ctx.getChild(1)) == '(' and self._toText(ctx.getChild(3)) == ')':
@@ -846,7 +842,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     identifiers=identifiers
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             # index access
             if self._toText(ctx.getChild(1)) == '[' and self._toText(ctx.getChild(3)) == ']':
@@ -855,7 +851,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                         type='IndexRangeAccess',
                         base=self.visitExpression(ctx.expression(0))
                     )
-                    return self._addMeta(node, ctx)
+                    return self._add_meta(node, ctx)
 
                 node = AST.IndexAccess(
                     type='IndexAccess',
@@ -863,7 +859,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     index=self.visitExpression(ctx.expression(1))
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             # expression with nameValueList
             if self._toText(ctx.getChild(1)) == '{' and self._toText(ctx.getChild(3)) == '}':
@@ -873,7 +869,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     arguments=self.visitNameValueList(ctx.nameValueList())
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
         elif len(ctx.children) == 5:
             # ternary operator
             if self._toText(ctx.getChild(1)) == '?' and self._toText(ctx.getChild(3)) == ':':
@@ -884,7 +880,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     falseExpression=self.visitExpression(ctx.expression(2))
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
             # index range access
             if self._toText(ctx.getChild(1)) == '[' and self._toText(ctx.getChild(2)) == ':' and self._toText(ctx.getChild(4)) == ']':
@@ -894,7 +890,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     indexEnd=self.visitExpression(ctx.expression(1))
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
             elif self._toText(ctx.getChild(1)) == '[' and self._toText(ctx.getChild(3)) == ':' and self._toText(ctx.getChild(4)) == ']':
                 node = AST.IndexRangeAccess(
                     type='IndexRangeAccess',
@@ -902,7 +898,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     indexStart=self.visitExpression(ctx.expression(1))
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
         elif len(ctx.children) == 6:
             # index range access
             if self._toText(ctx.getChild(1)) == '[' and self._toText(ctx.getChild(3)) == ':' and self._toText(ctx.getChild(5)) == ']':
@@ -913,7 +909,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                     indexEnd=self.visitExpression(ctx.expression(2))
                 )
 
-                return self._addMeta(node, ctx)
+                return self._add_meta(node, ctx)
 
         raise Exception('Unrecognized expression')
 
@@ -935,7 +931,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             arguments=args
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitFileLevelConstant(self, ctx: SP.FileLevelConstantContext) -> AST.FileLevelConstant:
         type = self.visitTypeName(ctx.typeName())
@@ -953,7 +949,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             isImmutable=False
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitForStatement(self, ctx: SP.ForStatementContext) -> AST.ForStatement:
         conditionExpression = self.visitExpressionStatement(ctx.expressionStatement())
@@ -970,7 +966,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visitStatement(ctx.statement())
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitHexLiteral(self, ctx: SP.HexLiteralContext) -> AST.HexLiteral:
         parts = [self._toText(x)[4:-1] for x in ctx.HexLiteralFragment()]
@@ -980,7 +976,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             parts=parts
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visit_primary_expression(self, ctx) -> Union[AST.PrimaryExpression, Any]:
         if ctx.BooleanLiteral():
@@ -1051,7 +1047,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             isArray=self._toText(ctx.getChild(0)) == '['
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def buildIdentifierList(self, ctx: SP.IdentifierListContext) -> List[Optional[AST.VariableDeclaration]]:
         children = ctx.children[1:-1]  # remove parentheses
@@ -1078,7 +1074,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=None
         )
 
-        return self._addMeta(result, ctx)
+        return self._add_meta(result, ctx)
     
 
     def visitImportDirective(self, ctx: SP.ImportDirectiveContext) -> AST.ImportDirective:
@@ -1127,14 +1123,14 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
         node = AST.ImportDirective(
             type='ImportDirective',
             path=path,
-            pathLiteral=self._addMeta(pathLiteral, ctx.importPath()),
+            pathLiteral=self._add_meta(pathLiteral, ctx.importPath()),
             unitAlias=unitAlias,
             unitAliasIdentifier=unitAliasIdentifier,
             symbolAliases=symbolAliases,
             symbolAliasesIdentifiers=symbolAliasesIdentifiers,
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def buildEventParameterList(self, ctx: SP.EventParameterListContext) -> List[AST.VariableDeclaration]:
         return [
@@ -1176,7 +1172,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visitAssemblyBlock(ctx.assemblyBlock()),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyBlock(self, ctx: SP.AssemblyBlockContext) -> AST.AssemblyBlock:
         operations = [
@@ -1189,7 +1185,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             operations=operations,
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyItem(self, ctx: SP.AssemblyItemContext) -> Union[AST.HexLiteral, AST.StringLiteral, AST.Break, AST.Continue, AST.AssemblyItem]:
         text = None
@@ -1207,21 +1203,21 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 isUnicode=[False]  # assembly doesn't seem to support unicode literals right now
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.BreakKeyword():
             node = AST.Break(
                 type='Break',
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.ContinueKeyword():
             node = AST.Continue(
                 type='Continue',
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         return self.visit(ctx.getChild(0))  # You'll need to define this method
 
@@ -1241,7 +1237,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             arguments=args,
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyLiteral(self, ctx: SP.AssemblyLiteralContext) -> Union[AST.StringLiteral, AST.BooleanLiteral, AST.DecimalNumber, AST.HexNumber, AST.HexLiteral]:
         text = None
@@ -1256,7 +1252,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 isUnicode=[False]  # assembly doesn't seem to support unicode literals right now
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.BooleanLiteral():
             node = AST.BooleanLiteral(
@@ -1264,7 +1260,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 value=self._toText(ctx.BooleanLiteral()) == 'true',
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.DecimalNumber():
             node = AST.DecimalNumber(
@@ -1272,7 +1268,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 value=self._toText(ctx),
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.HexNumber():
             node = AST.HexNumber(
@@ -1280,7 +1276,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
                 value=self._toText(ctx),
             )
 
-            return self._addMeta(node, ctx)
+            return self._add_meta(node, ctx)
 
         if ctx.hexLiteral():
             return self.visitHexLiteral(ctx.hexLiteral())
@@ -1294,7 +1290,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             cases=[self.visitAssemblyCase(c) for c in ctx.assemblyCase()],
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyCase(self, ctx: SP.AssemblyCaseContext) -> AST.AssemblyCase:
         value = None
@@ -1308,7 +1304,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             default=(value is None),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyLocalDefinition(self, ctx: SP.AssemblyLocalDefinitionContext) -> AST.AssemblyLocalDefinition:
         ctxAssemblyIdentifierOrList = ctx.assemblyIdentifierOrList()
@@ -1329,7 +1325,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=expression,
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyFunctionDefinition(self, ctx: SP.AssemblyFunctionDefinitionContext):
         ctxAssemblyIdentifierList = ctx.assemblyIdentifierList()
@@ -1346,7 +1342,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visitAssemblyBlock(ctx.assemblyBlock()),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyAssignment(self, ctx: SP.AssemblyAssignmentContext):
         ctxAssemblyIdentifierOrList = ctx.assemblyIdentifierOrList()
@@ -1363,7 +1359,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=self.visitAssemblyExpression(ctx.assemblyExpression()),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyMember(self, ctx: SP.AssemblyMemberContext) -> AST.AssemblyMemberAccess:
         accessed, member = ctx.identifier()
@@ -1373,7 +1369,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             memberName=self.visitIdentifier(member),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitLabelDefinition(self, ctx: SP.LabelDefinitionContext):
         node = AST.LabelDefinition(
@@ -1381,7 +1377,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             name=self._toText(ctx.identifier()),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyStackAssignment(self, ctx: SP.AssemblyStackAssignmentContext):
         node = AST.AssemblyStackAssignment(
@@ -1390,7 +1386,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             expression=self.visitAssemblyExpression(ctx.assemblyExpression()),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyFor(self, ctx: SP.AssemblyForContext):
         node = AST.AssemblyFor(
@@ -1401,7 +1397,7 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visit(ctx.getChild(4)),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitAssemblyIf(self, ctx: SP.AssemblyIfContext):
         node = AST.AssemblyIf(
@@ -1410,24 +1406,24 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             body=self.visitAssemblyBlock(ctx.assemblyBlock()),
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitContinueStatement(self, ctx: SP.ContinueStatementContext) -> AST.ContinueStatement:
         node = AST.ContinueStatement(
             type='ContinueStatement',
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def visitBreakStatement(self, ctx: SP.BreakStatementContext) -> AST.BreakStatement:
         node = AST.BreakStatement(
             type='BreakStatement',
         )
 
-        return self._addMeta(node, ctx)
+        return self._add_meta(node, ctx)
 
     def _toText(self, ctx: ParserRuleContext or ParseTree) -> str:
-        text = ctx.text
+        text = ctx.getText()
         if text is None:
             raise ValueError('Assertion error: text should never be undefined')
 
@@ -1469,13 +1465,13 @@ class ASTBuilder(ParseTreeVisitor, SolidityListener):
             'type': node.type
         }
 
-        if self.options.loc:
+        if "loc" in self.options:
             node['loc'] = self._loc(ctx)
 
-        if self.options.range:
+        if "range" in self.options:
             node['range'] = self._range(ctx)
 
-        return {**node_with_meta, **node}
+        return {**node_with_meta, **node.__dict__}
 
     def _map_commas_to_nulls(self, children: List[Optional[ParseTree]]) -> List[Optional[ParseTree]]:
         if len(children) == 0:
