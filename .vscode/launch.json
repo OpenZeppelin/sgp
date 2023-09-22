@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Run",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/solidity_antlr_py/main.py",
+            "program": "${workspaceFolder}/sgp/main.py",
             "console": "integratedTerminal",
             "justMyCode": false
         }
