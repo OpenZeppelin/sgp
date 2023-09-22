@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 class Location:
     def __init__(self, start: dict, end: dict):
@@ -6,10 +6,16 @@ class Location:
         self.end = end
 
 class BaseASTNode:
-    def __init__(self, type: str, range: Optional[List[int]] = None, loc: Optional[Location] = None):
-        self.type = type
-        self.range = range
+    def __init__(self, type: str, range: Optional[Tuple[int, int]] = None, loc: Optional[Location] = None):
+        self.type: str = type
+        self.range: Tuple[int, int] = range
+        self.loc: Location = loc
+
+    def add_loc(self, loc: Location) -> None:
         self.loc = loc
+
+    def add_range(self, range: Tuple[int, int]) -> None:
+        self.range = range
 
 class SourceUnit(BaseASTNode):
     def __init__(self, loc: Location, children: List[BaseASTNode]):
@@ -112,14 +118,9 @@ astNodeTypes = (
     'TypeDefinition',
 )
 
-from typing import List, Optional, Union
-
 class ASTNodeTypeString:
     pass  # Placeholder class for ASTNodeTypeString
 
-class BaseASTNode:
-    def __init__(self, type: str):
-        self.type = type
 
 class PragmaDirective(BaseASTNode):
     def __init__(self, name: str, value: str):

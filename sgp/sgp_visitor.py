@@ -1,23 +1,23 @@
 from typing import Any, List, Optional, Tuple, Union
 from antlr4.tree.Tree import ErrorNode
 from antlr4 import ParserRuleContext
-from antlr4.tree.Tree import ParseTreeVisitor
 from antlr4.tree.Tree import ParseTree
 from out.SolidityParser import SolidityParser as SP
 from out.SolidityVisitor import SolidityVisitor
-from common_types import ParseOptions
 import ast_types as AST
 
-class SourceLocation:
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
+class SGPVisitorOptions():
+    def __init__(self, tokens: bool = False, tolerant: bool = True, range: bool = True, loc: bool = True):
+        """
+        
+        """
+        self.range = range
+        self.loc = loc
+        self.tokens = tokens #TODO: what is this for?
+        self.errors_tolerant = tolerant
 
-class WithMeta:
-    pass
-
-class ASTBuilder(SolidityVisitor):
-    def __init__(self, options: ParseOptions):
+class SGPVisitor(SolidityVisitor):
+    def __init__(self, options: SGPVisitorOptions):
         super().__init__()
         self.result = None
         self._currentContract = None
@@ -33,10 +33,7 @@ class ASTBuilder(SolidityVisitor):
         children = [child for child in ctx.children if not isinstance(child, ErrorNode)]
 
         node = AST.SourceUnit(
-            loc=SourceLocation(
-                start=(0, 0),
-                end=(0, 0)
-            ),
+            loc=None,
             children=[self.visit(child) for child in children[:-1]]
         )
 
@@ -1441,13 +1438,13 @@ class ASTBuilder(SolidityVisitor):
 
         raise ValueError('Assertion error: non-exhaustive stateMutability check')
 
-    def _loc(self, ctx) -> SourceLocation:
+    def _loc(self, ctx) -> AST.Location:
         start_line = ctx.start.line
-        start_column = ctx.start.charPositionInLine
+        start_column = ctx.start.column
         end_line = ctx.stop.line if ctx.stop else start_line
-        end_column = ctx.stop.charPositionInLine if ctx.stop else start_column
+        end_column = ctx.stop.column if ctx.stop else start_column
         
-        source_location = SourceLocation(
+        source_location = AST.Location(
             start=(start_line, start_column),
             end=(end_line, end_column)
         )
@@ -1455,21 +1452,18 @@ class ASTBuilder(SolidityVisitor):
         return source_location
 
     def _range(self, ctx) -> Tuple[int, int]:
-        start_index = ctx.start.startIndex
-        stop_index = ctx.stop.stopIndex if ctx.stop else start_index
-
-        return start_index, stop_index
+        return (ctx.start, ctx.stop)
 
     def _add_meta(self, node: Union[AST.BaseASTNode, AST.NameValueList], ctx) -> Union[AST.BaseASTNode, AST.NameValueList]:
         node_with_meta = {
             'type': node.type
         }
 
-        if "loc" in self.options:
-            node['loc'] = self._loc(ctx)
+        if self.options.loc:
+            node.add_loc(self._loc(ctx))
 
-        if "range" in self.options:
-            node['range'] = self._range(ctx)
+        if self.options.range:
+            node.add_range(self._range(ctx))
 
         return {**node_with_meta, **node.__dict__}
 

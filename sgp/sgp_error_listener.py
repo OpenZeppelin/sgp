@@ -1,6 +1,6 @@
 from antlr4.error.ErrorListener import ErrorListener
 
-class CustomErrorListener(ErrorListener):
+class SGPErrorListener(ErrorListener):
     def __init__(self):
         super().__init__()
         self._errors = []
@@ -8,8 +8,8 @@ class CustomErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self._errors.append({"message": msg, "line": line, "column": column})
 
-    def getErrors(self):
+    def get_errors(self):
         return self._errors
 
-    def hasErrors(self):
+    def has_errors(self):
         return len(self._errors) > 0

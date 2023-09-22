@@ -1,4 +1,4 @@
-import parser
+import sgp_parser
 
 def main():
     input = """
@@ -8,7 +8,7 @@ def main():
         }
     """
     try:
-        ast = parser.parse(input)
+        ast = sgp_parser.parse(input)
         print(ast)
     except Exception as e:
         print(e)
