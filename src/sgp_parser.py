@@ -1,5 +1,5 @@
 import os
-import json
+import simplejson
 from typing import Dict
 
 from antlr4.CommonTokenStream import CommonTokenStream
@@ -10,7 +10,6 @@ from .parser.SolidityParser import SolidityParser
 
 from .sgp_visitor import SGPVisitorOptions, SGPVisitor
 from .sgp_error_listener import SGPErrorListener
-from .ast_node_types import ASTNodeJSONEncoder
 from .tokens import build_token_list
 
 class ParserError(Exception):
@@ -58,5 +57,6 @@ def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions(), d
     if dump_json:
         os.makedirs(dump_path, exist_ok=True)
         with open(os.path.join(dump_path, "ast.json"), "w") as f:
-            json.dump(ast, f, indent=4, cls=ASTNodeJSONEncoder)
+            s = simplejson.dumps(ast, default=lambda obj: obj.__dict__)
+            f.write(s)
     return ast

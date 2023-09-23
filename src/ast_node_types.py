@@ -1,9 +1,4 @@
-from collections.abc import Callable
-from json import JSONEncoder
 from typing import Any, List, Optional, Tuple, Union, Dict
-from typing_extensions import override
-
-from .utils import string_from_snake_to_camel_case
 
 
 class Location:
@@ -58,46 +53,17 @@ class BaseASTNode:
         self,
         type: str,
         range: Range = None,
-        loc: Optional[Location] = None,
-        children: List["BaseASTNode"] = None,
+        loc: Optional[Location] = None
     ) -> None:
         self.type: str = type
         self.loc: Location = loc
         self.range: Range = range
-        self.children: List[BaseASTNode] = children
-
+        
     def add_loc(self, loc: Location) -> None:
         self.loc = loc
 
     def add_range(self, range: Range) -> None:
         self.range = range
-
-    def to_json(self, camel_case_keys: bool = True) -> Dict:
-        res = {}
-        for key, value in self.__dict__.items():
-            if camel_case_keys:
-                key = string_from_snake_to_camel_case(key)
-            if isinstance(value, BaseASTNode):
-                res[key] = value.to_json(camel_case_keys)
-            elif isinstance(value, list):
-                res[key] = []
-                for item in value:
-                    if isinstance(item, BaseASTNode):
-                        res[key].append(item.to_json(camel_case_keys))
-                    else:
-                        res[key].append(**item.__dict__)
-            else:
-                res[key] = (
-                    {
-                        k
-                        if not camel_case_keys
-                        else string_from_snake_to_camel_case(k): v
-                        for k, v in value.__dict__.items()
-                    }
-                    if hasattr(value, "__dict__")
-                    else str(value)
-                )
-        return res
 
 
 class SourceUnit(BaseASTNode):
@@ -106,38 +72,8 @@ class SourceUnit(BaseASTNode):
     """
 
     def __init__(self, children: List[BaseASTNode]) -> None:
-        super().__init__("SourceUnit", children=children)
-
-
-class ASTNodeJSONEncoder(JSONEncoder):
-    def __init__(
-        self,
-        *,
-        skipkeys: bool = False,
-        ensure_ascii: bool = True,
-        check_circular: bool = True,
-        allow_nan: bool = True,
-        sort_keys: bool = False,
-        indent: int | str | None = None,
-        separators: tuple[str, str] | None = None,
-        default: Callable[..., Any] | None = None,
-        camel_case_keys: bool = True
-    ) -> None:
-        super().__init__(
-            skipkeys=skipkeys,
-            ensure_ascii=ensure_ascii,
-            check_circular=check_circular,
-            allow_nan=allow_nan,
-            sort_keys=sort_keys,
-            indent=indent,
-            separators=separators,
-            default=default,
-        )
-        self._camel_case_keys: bool = camel_case_keys
-
-    @override
-    def default(self, node: BaseASTNode) -> Dict:
-        return node.to_json(self._camel_case_keys)
+        super().__init__("SourceUnit")
+        self.children=children
 
 
 class ContractDefinition(BaseASTNode):
@@ -152,10 +88,11 @@ class ContractDefinition(BaseASTNode):
         kind: str,
         children: List[BaseASTNode],
     ) -> None:
-        super().__init__("ContractDefinition", children=children)
+        super().__init__("ContractDefinition")
         self.name: str = name
         self.base_contracts: List["InheritanceSpecifier"] = base_contracts
         self.kind: str = kind
+        self.children: List[BaseASTNode] = children
 
 
 class InheritanceSpecifier(BaseASTNode):
