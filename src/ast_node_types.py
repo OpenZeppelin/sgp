@@ -3,7 +3,7 @@ from json import JSONEncoder
 from typing import Any, List, Optional, Tuple, Union, Dict
 from typing_extensions import override
 
-from utils import string_from_snake_to_camel_case
+from .utils import string_from_snake_to_camel_case
 
 
 class Location:
@@ -771,7 +771,7 @@ class Identifier(BaseASTNode):
 
 
 # TODO: convert to enum
-binaryOpValues = [
+binary_op_values = [
     "+",
     "-",
     "*",

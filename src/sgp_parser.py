@@ -5,13 +5,13 @@ from typing import Dict
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.InputStream import InputStream as ANTLRInputStream
 
-from parser.SolidityLexer import SolidityLexer
-from parser.SolidityParser import SolidityParser
+from .parser.SolidityLexer import SolidityLexer
+from .parser.SolidityParser import SolidityParser
 
-from sgp_visitor import SGPVisitorOptions, SGPVisitor
-from sgp_error_listener import SGPErrorListener
-from ast_node_types import ASTNodeJSONEncoder
-from tokens import build_token_list
+from .sgp_visitor import SGPVisitorOptions, SGPVisitor
+from .sgp_error_listener import SGPErrorListener
+from .ast_node_types import ASTNodeJSONEncoder
+from .tokens import build_token_list
 
 class ParserError(Exception):
     def __init__(self, errors):
