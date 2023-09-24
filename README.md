@@ -1,8 +1,10 @@
 [![Lint and test + coverage](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml/badge.svg?branch=main)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml) [![ANTLR4 test](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml/badge.svg)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml)
 
-# Solidity Language Grammar ANTLR Python parser
+# Solidity Grammar Parser
 
 The [ANTLR (ANother Tool for Language Recognition) ](https://www.antlr.org/) grammar for [Solidity](https://solidity.readthedocs.io/) is maintained in [Solidity.g4](./Solidity.g4).
+
+TBD:
 
 This is a fork of [@solidity-parser](solidity-parser/antlr) with some amendments in the [build.sh]() script that automatically installs all required dependencies and uses ANTLR to generate `Python` parser.
 
