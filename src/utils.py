@@ -1,6 +1,11 @@
 from typing import Any
 
+
 def string_from_snake_to_camel_case(input: str) -> str:
+    """
+    #TODO: add docstring
+    """
+
     if not input:
         return input
     if "_" not in input:

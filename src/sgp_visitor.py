@@ -61,8 +61,8 @@ class SGPVisitor(SolidityVisitor):
     def visitContractDefinition(
         self, ctx: SP.ContractDefinitionContext
     ) -> ContractDefinition:
-        name = self._toText(ctx.identifier())
-        kind = self._toText(ctx.getChild(0))
+        name = self._to_text(ctx.identifier())
+        kind = self._to_text(ctx.getChild(0))
 
         self._current_contract = name
 
@@ -80,7 +80,7 @@ class SGPVisitor(SolidityVisitor):
     def visitStateVariableDeclaration(self, ctx: SP.StateVariableDeclarationContext):
         type = self.visitTypeName(ctx.typeName())
         iden = ctx.identifier()
-        name = self._toText(iden)
+        name = self._to_text(iden)
 
         expression = None
         ctxExpression = ctx.expression()
@@ -114,17 +114,17 @@ class SGPVisitor(SolidityVisitor):
             isImmutable = True
 
         decl = StateVariableDeclarationVariable(
-            typeName=type,
+            type_name=type,
             name=name,
             identifier=self.visitIdentifier(iden),
             expression=expression,
             visibility=visibility,
-            isStateVar=True,
-            isDeclaredConst=isDeclaredConst,
-            isIndexed=False,
+            is_state_var=True,
+            is_declared_const=isDeclaredConst,
+            is_indexed=False,
             is_immutable=isImmutable,
             override=override,
-            storageLocation=None,
+            storage_location=None,
         )
 
         node = StateVariableDeclaration(
@@ -139,13 +139,13 @@ class SGPVisitor(SolidityVisitor):
         storageLocation = None
         ctxStorageLocation = ctx.storageLocation()
         if ctxStorageLocation:
-            storageLocation = self._toText(ctxStorageLocation)
+            storageLocation = self._to_text(ctxStorageLocation)
 
         identifierCtx = ctx.identifier()
 
         node = VariableDeclaration(
             type_name=self.visitTypeName(ctx.typeName()),
-            name=self._toText(identifierCtx),
+            name=self._to_text(identifierCtx),
             identifier=self.visitIdentifier(identifierCtx),
             storage_location=storageLocation,
             is_state_var=False,
@@ -176,7 +176,6 @@ class SGPVisitor(SolidityVisitor):
             initialValue = self.visitExpression(ctxExpression)
 
         node = VariableDeclarationStatement(
-            type="VariableDeclarationStatement",
             variables=variables,
             initial_value=initialValue,
         )
@@ -197,9 +196,8 @@ class SGPVisitor(SolidityVisitor):
         parameters = [
             self._add_meta(
                 VariableDeclaration(
-                    type="VariableDeclaration",
                     type_name=self.visitTypeName(paramCtx.typeName()),
-                    name=self._toText(paramCtx.identifier())
+                    name=self._to_text(paramCtx.identifier())
                     if paramCtx.identifier()
                     else None,
                     identifier=self.visitIdentifier(paramCtx.identifier())
@@ -216,8 +214,7 @@ class SGPVisitor(SolidityVisitor):
         ]
 
         node = EventDefinition(
-            type="EventDefinition",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             parameters=parameters,
             is_anonymous=bool(ctx.AnonymousKeyword() is not None),
         )
@@ -231,9 +228,9 @@ class SGPVisitor(SolidityVisitor):
 
     def visitParameter(self, ctx: SP.ParameterContext) -> VariableDeclaration:
         storageLocation = (
-            self._toText(ctx.storageLocation()) if ctx.storageLocation() else None
+            self._to_text(ctx.storageLocation()) if ctx.storageLocation() else None
         )
-        name = self._toText(ctx.identifier()) if ctx.identifier() else None
+        name = self._to_text(ctx.identifier()) if ctx.identifier() else None
 
         node = VariableDeclaration(
             type_name=self.visitTypeName(ctx.typeName()),
@@ -279,7 +276,7 @@ class SGPVisitor(SolidityVisitor):
 
         # see what type of function we"re dealing with
         ctxReturnParameters = ctx.returnParameters()
-        func_desc_child = self._toText(ctx.functionDescriptor().getChild(0))
+        func_desc_child = self._to_text(ctx.functionDescriptor().getChild(0))
         if func_desc_child == "constructor":
             parameters = [self.visit(x) for x in ctx.parameterList().parameter()]
             # error out on incorrect function visibility
@@ -304,7 +301,7 @@ class SGPVisitor(SolidityVisitor):
             isReceiveEther = True
         elif func_desc_child == "function":
             identifier = ctx.functionDescriptor().identifier()
-            name = self._toText(identifier) if identifier is not None else ""
+            name = self._to_text(identifier) if identifier is not None else ""
             parameters = [self.visit(x) for x in ctx.parameterList().parameter()]
             returnParameters = (
                 self.visitReturnParameters(ctxReturnParameters)
@@ -354,25 +351,25 @@ class SGPVisitor(SolidityVisitor):
 
     def visitEnumDefinition(self, ctx: SP.EnumDefinitionContext) -> EnumDefinition:
         node = EnumDefinition(
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             members=[self.visitEnumValue(x) for x in ctx.enumValue()],
         )
 
         return self._add_meta(node, ctx)
 
     def visitEnumValue(self, ctx: SP.EnumValueContext) -> EnumValue:
-        node = EnumValue(name=self._toText(ctx.identifier()))
+        node = EnumValue(name=self._to_text(ctx.identifier()))
         return self._add_meta(node, ctx)
 
     def visitElementaryTypeName(
         self, ctx: SP.ElementaryTypeNameContext
     ) -> ElementaryTypeName:
-        node = ElementaryTypeName(name=self._toText(ctx), state_mutability=None)
+        node = ElementaryTypeName(name=self._to_text(ctx), state_mutability=None)
 
         return self._add_meta(node, ctx)
 
     def visitIdentifier(self, ctx: SP.IdentifierContext) -> Identifier:
-        node = Identifier(name=self._toText(ctx))
+        node = Identifier(name=self._to_text(ctx))
         return self._add_meta(node, ctx)
 
     def visitTypeName(
@@ -391,7 +388,6 @@ class SGPVisitor(SolidityVisitor):
             ctxTypeName = ctx.typeName()
 
             node = ArrayTypeName(
-                type="ArrayTypeName",
                 base_type_name=self.visitTypeName(ctxTypeName),
                 length=length,
             )
@@ -400,9 +396,8 @@ class SGPVisitor(SolidityVisitor):
 
         if ctx.children and len(ctx.children) == 2:
             node = ElementaryTypeName(
-                type="ElementaryTypeName",
-                name=self._toText(ctx.getChild(0)),
-                state_mutability=self._toText(ctx.getChild(1)),
+                name=self._to_text(ctx.getChild(0)),
+                state_mutability=self._to_text(ctx.getChild(1)),
             )
 
             return self._add_meta(node, ctx)
@@ -422,7 +417,7 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.UserDefinedTypeNameContext
     ) -> UserDefinedTypeName:
         node = UserDefinedTypeName(
-            type="UserDefinedTypeName", name_path=self._toText(ctx)
+            name_path=self._to_text(ctx)
         )
 
         return self._add_meta(node, ctx)
@@ -444,10 +439,9 @@ class SGPVisitor(SolidityVisitor):
         if userDefinedTypeNameCtx is not None:
             # using Lib for ...
             node = UsingForDeclaration(
-                type="UsingForDeclaration",
                 is_global=isGlobal,
                 type_name=typeName,
-                library_name=self._toText(userDefinedTypeNameCtx),
+                library_name=self._to_text(userDefinedTypeNameCtx),
                 functions=[],
                 operators=[],
             )
@@ -455,17 +449,16 @@ class SGPVisitor(SolidityVisitor):
             # using { } for ...
             usingForObjectDirectives = usingForObjectCtx.usingForObjectDirective()
             functions = [
-                self._toText(x.userDefinedTypeName()) for x in usingForObjectDirectives
+                self._to_text(x.userDefinedTypeName()) for x in usingForObjectDirectives
             ]
             operators = [
-                self._toText(x.userDefinableOperators())
+                self._to_text(x.userDefinableOperators())
                 if x.userDefinableOperators() is not None
                 else None
                 for x in usingForObjectDirectives
             ]
 
             node = UsingForDeclaration(
-                type="UsingForDeclaration",
                 is_global=isGlobal,
                 type_name=typeName,
                 library_name=None,
@@ -482,12 +475,12 @@ class SGPVisitor(SolidityVisitor):
         # in >=0.5.0 <0.7.0
         versionContext = ctx.pragmaValue().version()
 
-        value = self._toText(ctx.pragmaValue())
+        value = self._to_text(ctx.pragmaValue())
         if versionContext and versionContext.children is not None:
-            value = " ".join([self._toText(x) for x in versionContext.children])
+            value = " ".join([self._to_text(x) for x in versionContext.children])
 
         node = PragmaDirective(
-            name=self._toText(ctx.pragmaName()), value=value
+            name=self._to_text(ctx.pragmaName()), value=value
         )
 
         return self._add_meta(node, ctx)
@@ -503,7 +496,6 @@ class SGPVisitor(SolidityVisitor):
         )
 
         node = InheritanceSpecifier(
-            type="InheritanceSpecifier",
             base_name=self.visitUserDefinedTypeName(ctx.userDefinedTypeName()),
             arguments=args,
         )
@@ -525,8 +517,7 @@ class SGPVisitor(SolidityVisitor):
             args = None
 
         node = ModifierInvocation(
-            type="ModifierInvocation",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             arguments=args,
         )
         return self._add_meta(node, ctx)
@@ -553,11 +544,10 @@ class SGPVisitor(SolidityVisitor):
             visibility = "external"
 
         stateMutability = (
-            self._toText(ctx.stateMutability(0)) if ctx.stateMutability() else None
+            self._to_text(ctx.stateMutability(0)) if ctx.stateMutability() else None
         )
 
         node = FunctionTypeName(
-            type="FunctionTypeName",
             parameter_types=parameterTypes,
             return_types=returnTypes,
             visibility=visibility,
@@ -570,11 +560,10 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.FunctionTypeParameterContext
     ) -> VariableDeclaration:
         storageLocation = (
-            self._toText(ctx.storageLocation()) if ctx.storageLocation() else None
+            self._to_text(ctx.storageLocation()) if ctx.storageLocation() else None
         )
 
         node = VariableDeclaration(
-            type="VariableDeclaration",
             type_name=self.visitTypeName(ctx.typeName()),
             name=None,
             identifier=None,
@@ -604,7 +593,7 @@ class SGPVisitor(SolidityVisitor):
 
     def visitEmitStatement(self, ctx: SP.EmitStatementContext) -> EmitStatement:
         node = EmitStatement(
-            type="EmitStatement", event_call=self.visitFunctionCall(ctx.functionCall())
+            event_call=self.visitFunctionCall(ctx.functionCall())
         )
 
         return self._add_meta(node, ctx)
@@ -613,8 +602,7 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.CustomErrorDefinitionContext
     ) -> CustomErrorDefinition:
         node = CustomErrorDefinition(
-            type="CustomErrorDefinition",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             parameters=self.visitParameterList(ctx.parameterList()),
         )
 
@@ -622,8 +610,7 @@ class SGPVisitor(SolidityVisitor):
 
     def visitTypeDefinition(self, ctx: SP.TypeDefinitionContext) -> TypeDefinition:
         node = TypeDefinition(
-            type="TypeDefinition",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             definition=self.visitElementaryTypeName(ctx.elementaryTypeName()),
         )
 
@@ -633,7 +620,6 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.RevertStatementContext
     ) -> RevertStatement:
         node = RevertStatement(
-            type="RevertStatement",
             revert_call=self.visitFunctionCall(ctx.functionCall()),
         )
 
@@ -655,11 +641,10 @@ class SGPVisitor(SolidityVisitor):
         elif ctxArgsNameValueList:
             for nameValue in ctxArgsNameValueList.nameValue():
                 args.append(self.visitExpression(nameValue.expression()))
-                names.append(self._toText(nameValue.identifier()))
+                names.append(self._to_text(nameValue.identifier()))
                 identifiers.append(self.visitIdentifier(nameValue.identifier()))
 
         node = FunctionCall(
-            type="FunctionCall",
             expression=self.visitExpression(ctx.expression()),
             arguments=args,
             names=names,
@@ -672,7 +657,7 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.StructDefinitionContext
     ) -> StructDefinition:
         node = StructDefinition(
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             members=[
                 self.visitVariableDeclaration(x) for x in ctx.variableDeclaration()
             ],
@@ -682,7 +667,6 @@ class SGPVisitor(SolidityVisitor):
 
     def visitWhileStatement(self, ctx: SP.WhileStatementContext) -> WhileStatement:
         node = WhileStatement(
-            type="WhileStatement",
             condition=self.visitExpression(ctx.expression()),
             body=self.visitStatement(ctx.statement()),
         )
@@ -693,7 +677,6 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.DoWhileStatementContext
     ) -> DoWhileStatement:
         node = DoWhileStatement(
-            type="DoWhileStatement",
             condition=self.visitExpression(ctx.expression()),
             body=self.visitStatement(ctx.statement()),
         )
@@ -708,7 +691,6 @@ class SGPVisitor(SolidityVisitor):
             falseBody = self.visitStatement(ctx.statement(1))
 
         node = IfStatement(
-            type="IfStatement",
             condition=self.visitExpression(ctx.expression()),
             true_body=trueBody,
             false_body=falseBody,
@@ -725,7 +707,6 @@ class SGPVisitor(SolidityVisitor):
         catchClauses = [self.visitCatchClause(exprCtx) for exprCtx in ctx.catchClause()]
 
         node = TryStatement(
-            type="TryStatement",
             expression=self.visitExpression(ctx.expression()),
             return_parameters=returnParameters,
             body=self.visitBlock(ctx.block()),
@@ -739,16 +720,15 @@ class SGPVisitor(SolidityVisitor):
         if ctx.parameterList():
             parameters = self.visitParameterList(ctx.parameterList())
 
-        if ctx.identifier() and self._toText(ctx.identifier()) not in [
+        if ctx.identifier() and self._to_text(ctx.identifier()) not in [
             "Error",
             "Panic",
         ]:
             raise Exception("Expected 'Error' or 'Panic' identifier in catch clause")
 
-        kind = self._toText(ctx.identifier()) if ctx.identifier() else None
+        kind = self._to_text(ctx.identifier()) if ctx.identifier() else None
 
         node = CatchClause(
-            type="CatchClause",
             is_reason_string_type=kind
             == "Error",  # deprecated, use the `kind` property instead,
             kind=kind,
@@ -764,18 +744,17 @@ class SGPVisitor(SolidityVisitor):
         if not ctx:
             return None
         node = ExpressionStatement(
-            type="ExpressionStatement",
             expression=self.visitExpression(ctx.expression()),
         )
 
         return self._add_meta(node, ctx)
 
     def visitNumberLiteral(self, ctx: SP.NumberLiteralContext) -> NumberLiteral:
-        number = self._toText(ctx.getChild(0))
+        number = self._to_text(ctx.getChild(0))
         subdenomination = None
 
         if ctx.children and len(ctx.children) == 2:
-            subdenomination = self._toText(ctx.getChild(1))
+            subdenomination = self._to_text(ctx.getChild(1))
 
         node = NumberLiteral(
             number=number, subdenomination=subdenomination
@@ -800,7 +779,6 @@ class SGPVisitor(SolidityVisitor):
         mappingValueNameCtx = ctx.mappingValueName()
 
         node = Mapping(
-            type="Mapping",
             key_type=self.visitMappingKey(ctx.mappingKey()),
             key_name=self.visitIdentifier(mappingKeyNameCtx.identifier())
             if mappingKeyNameCtx
@@ -836,8 +814,7 @@ class SGPVisitor(SolidityVisitor):
             body = self.visitBlock(blockCtx)
 
         node = ModifierDefinition(
-            type="ModifierDefinition",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             parameters=parameters,
             body=body,
             is_virtual=isVirtual,
@@ -850,7 +827,7 @@ class SGPVisitor(SolidityVisitor):
         self, ctx: SP.UncheckedStatementContext
     ) -> UncheckedStatement:
         node = UncheckedStatement(
-            type="UncheckedStatement", block=self.visitBlock(ctx.block())
+            block=self.visitBlock(ctx.block())
         )
 
         return self._add_meta(node, ctx)
@@ -867,36 +844,34 @@ class SGPVisitor(SolidityVisitor):
                 )
             return self.visitPrimaryExpression(primaryExpressionCtx)
         elif len(ctx.children) == 2:
-            op = self._toText(ctx.getChild(0))
+            op = self._to_text(ctx.getChild(0))
 
             # new expression
             if op == "new":
                 node = NewExpression(
-                    type="NewExpression", type_name=self.visitTypeName(ctx.typeName())
+                    type_name=self.visitTypeName(ctx.typeName())
                 )
                 return self._add_meta(node, ctx)
 
             # prefix operators
             if op in UNARY_OP_VALUES:
                 node = UnaryOperation(
-                    type="UnaryOperation",
                     operator=op,
                     sub_expression=self.visitExpression(
-                        ctx.getRuleContext(0, SP.ExpressionContext)
+                        ctx.getTypedRuleContext(SP.ExpressionContext, 0)
                     ),
                     is_prefix=True,
                 )
                 return self._add_meta(node, ctx)
 
-            op = self._toText(ctx.getChild(1))
+            op = self._to_text(ctx.getChild(1))
 
             # postfix operators
             if op in ["++", "--"]:
                 node = UnaryOperation(
-                    type="UnaryOperation",
                     operator=op,
                     sub_expression=self.visitExpression(
-                        ctx.getRuleContext(0, SP.ExpressionContext)
+                        ctx.getTypedRuleContext(SP.ExpressionContext, 0)
                     ),
                     is_prefix=False,
                 )
@@ -904,34 +879,31 @@ class SGPVisitor(SolidityVisitor):
         elif len(ctx.children) == 3:
             # treat parenthesis as no-op
             if (
-                self._toText(ctx.getChild(0)) == "("
-                and self._toText(ctx.getChild(2)) == ")"
+                self._to_text(ctx.getChild(0)) == "("
+                and self._to_text(ctx.getChild(2)) == ")"
             ):
                 node = TupleExpression(
-                    type="TupleExpression",
                     components=[
                         self.visitExpression(
-                            ctx.getRuleContext(0, SP.ExpressionContext)
+                            ctx.getTypedRuleContext(SP.ExpressionContext, 0)
                         )
                     ],
                     isArray=False,
                 )
                 return self._add_meta(node, ctx)
 
-            op = self._toText(ctx.getChild(1))
+            op = self._to_text(ctx.getChild(1))
 
             # member access
             if op == ".":
                 node = MemberAccess(
-                    type="MemberAccess",
                     expression=self.visitExpression(ctx.expression(0)),
-                    member_name=self._toText(ctx.identifier()),
+                    member_name=self._to_text(ctx.identifier()),
                 )
                 return self._add_meta(node, ctx)
 
             if op in BINARY_OP_VALUES:
                 node = BinaryOperation(
-                    type="BinaryOperation",
                     operator=op,
                     left=self.visitExpression(ctx.expression(0)),
                     right=self.visitExpression(ctx.expression(1)),
@@ -940,8 +912,8 @@ class SGPVisitor(SolidityVisitor):
         elif len(ctx.children) == 4:
             # function call
             if (
-                self._toText(ctx.getChild(1)) == "("
-                and self._toText(ctx.getChild(3)) == ")"
+                self._to_text(ctx.getChild(1)) == "("
+                and self._to_text(ctx.getChild(3)) == ")"
             ):
                 args = []
                 names = []
@@ -956,11 +928,10 @@ class SGPVisitor(SolidityVisitor):
                 elif ctxArgs.nameValueList():
                     for nameValue in ctxArgs.nameValueList().nameValue():
                         args.append(self.visitExpression(nameValue.expression()))
-                        names.append(self._toText(nameValue.identifier()))
+                        names.append(self._to_text(nameValue.identifier()))
                         identifiers.append(self.visitIdentifier(nameValue.identifier()))
 
                 node = FunctionCall(
-                    type="FunctionCall",
                     expression=self.visitExpression(ctx.expression(0)),
                     arguments=args,
                     names=names,
@@ -971,18 +942,16 @@ class SGPVisitor(SolidityVisitor):
 
             # index access
             if (
-                self._toText(ctx.getChild(1)) == "["
-                and self._toText(ctx.getChild(3)) == "]"
+                self._to_text(ctx.getChild(1)) == "["
+                and self._to_text(ctx.getChild(3)) == "]"
             ):
-                if ctx.getChild(2).text == ":":
+                if ctx.getChild(2).getText() == ":":
                     node = IndexRangeAccess(
-                        type="IndexRangeAccess",
                         base=self.visitExpression(ctx.expression(0)),
                     )
                     return self._add_meta(node, ctx)
 
                 node = IndexAccess(
-                    type="IndexAccess",
                     base=self.visitExpression(ctx.expression(0)),
                     index=self.visitExpression(ctx.expression(1)),
                 )
@@ -991,11 +960,10 @@ class SGPVisitor(SolidityVisitor):
 
             # expression with nameValueList
             if (
-                self._toText(ctx.getChild(1)) == "{"
-                and self._toText(ctx.getChild(3)) == "}"
+                self._to_text(ctx.getChild(1)) == "{"
+                and self._to_text(ctx.getChild(3)) == "}"
             ):
                 node = NameValueExpression(
-                    type="NameValueExpression",
                     expression=self.visitExpression(ctx.expression(0)),
                     arguments=self.visitNameValueList(ctx.nameValueList()),
                 )
@@ -1004,11 +972,10 @@ class SGPVisitor(SolidityVisitor):
         elif len(ctx.children) == 5:
             # ternary operator
             if (
-                self._toText(ctx.getChild(1)) == "?"
-                and self._toText(ctx.getChild(3)) == ":"
+                self._to_text(ctx.getChild(1)) == "?"
+                and self._to_text(ctx.getChild(3)) == ":"
             ):
                 node = Conditional(
-                    type="Conditional",
                     condition=self.visitExpression(ctx.expression(0)),
                     true_expression=self.visitExpression(ctx.expression(1)),
                     false_expression=self.visitExpression(ctx.expression(2)),
@@ -1018,24 +985,22 @@ class SGPVisitor(SolidityVisitor):
 
             # index range access
             if (
-                self._toText(ctx.getChild(1)) == "["
-                and self._toText(ctx.getChild(2)) == ":"
-                and self._toText(ctx.getChild(4)) == "]"
+                self._to_text(ctx.getChild(1)) == "["
+                and self._to_text(ctx.getChild(2)) == ":"
+                and self._to_text(ctx.getChild(4)) == "]"
             ):
                 node = IndexRangeAccess(
-                    type="IndexRangeAccess",
                     base=self.visitExpression(ctx.expression(0)),
                     index_end=self.visitExpression(ctx.expression(1)),
                 )
 
                 return self._add_meta(node, ctx)
             elif (
-                self._toText(ctx.getChild(1)) == "["
-                and self._toText(ctx.getChild(3)) == ":"
-                and self._toText(ctx.getChild(4)) == "]"
+                self._to_text(ctx.getChild(1)) == "["
+                and self._to_text(ctx.getChild(3)) == ":"
+                and self._to_text(ctx.getChild(4)) == "]"
             ):
                 node = IndexRangeAccess(
-                    type="IndexRangeAccess",
                     base=self.visitExpression(ctx.expression(0)),
                     index_start=self.visitExpression(ctx.expression(1)),
                 )
@@ -1044,12 +1009,11 @@ class SGPVisitor(SolidityVisitor):
         elif len(ctx.children) == 6:
             # index range access
             if (
-                self._toText(ctx.getChild(1)) == "["
-                and self._toText(ctx.getChild(3)) == ":"
-                and self._toText(ctx.getChild(5)) == "]"
+                self._to_text(ctx.getChild(1)) == "["
+                and self._to_text(ctx.getChild(3)) == ":"
+                and self._to_text(ctx.getChild(5)) == "]"
             ):
                 node = IndexRangeAccess(
-                    type="IndexRangeAccess",
                     base=self.visitExpression(ctx.expression(0)),
                     index_start=self.visitExpression(ctx.expression(1)),
                     index_end=self.visitExpression(ctx.expression(2)),
@@ -1065,12 +1029,12 @@ class SGPVisitor(SolidityVisitor):
         args = []
 
         for nameValue in ctx.nameValue():
-            names.append(self._toText(nameValue.identifier()))
+            names.append(self._to_text(nameValue.identifier()))
             identifiers.append(self.visitIdentifier(nameValue.identifier()))
             args.append(self.visitExpression(nameValue.expression()))
 
         node = NameValueList(
-            type="NameValueList", names=names, identifiers=identifiers, arguments=args
+            names=names, identifiers=identifiers, arguments=args
         )
 
         return self._add_meta(node, ctx)
@@ -1080,16 +1044,15 @@ class SGPVisitor(SolidityVisitor):
     ) -> FileLevelConstant:
         type = self.visitTypeName(ctx.typeName())
         iden = ctx.identifier()
-        name = self._toText(iden)
+        name = self._to_text(iden)
 
         expression = self.visitExpression(ctx.expression())
 
         node = FileLevelConstant(
-            type="FileLevelConstant",
             type_name=type,
             name=name,
             initial_value=expression,
-            isDeclaredConst=True,
+            is_declared_const=True,
             is_immutable=False,
         )
 
@@ -1100,13 +1063,11 @@ class SGPVisitor(SolidityVisitor):
         if conditionExpression:
             conditionExpression = conditionExpression.expression
         node = ForStatement(
-            type="ForStatement",
             init_expression=self.visitSimpleStatement(ctx.simpleStatement())
             if ctx.simpleStatement()
             else None,
             condition_expression=conditionExpression,
             loop_expression=ExpressionStatement(
-                type="ExpressionStatement",
                 expression=self.visitExpression(ctx.expression())
                 if ctx.expression()
                 else None,
@@ -1117,8 +1078,8 @@ class SGPVisitor(SolidityVisitor):
         return self._add_meta(node, ctx)
 
     def visitHexLiteral(self, ctx: SP.HexLiteralContext) -> HexLiteral:
-        parts = [self._toText(x)[4:-1] for x in ctx.HexLiteralFragment()]
-        node = HexLiteral(type="HexLiteral", value="".join(parts), parts=parts)
+        parts = [self._to_text(x)[4:-1] for x in ctx.HexLiteralFragment()]
+        node = HexLiteral(value="".join(parts), parts=parts)
 
         return self._add_meta(node, ctx)
 
@@ -1187,13 +1148,12 @@ class SGPVisitor(SolidityVisitor):
         children = ctx.children[1:-1]  # remove parentheses
         components = [
             self.visit(expr) if expr is not None else None
-            for expr in self._mapCommasToNulls(children)
+            for expr in self._map_commas_to_nulls(children)
         ]
 
         node = TupleExpression(
-            type="TupleExpression",
             components=components,
-            isArray=self._toText(ctx.getChild(0)) == "[",
+            isArray=self._to_text(ctx.getChild(0)) == "[",
         )
 
         return self._add_meta(node, ctx)
@@ -1205,8 +1165,8 @@ class SGPVisitor(SolidityVisitor):
         identifiers = ctx.identifier()
         i = 0
         return [
-            self.buildVariableDeclaration(iden) if iden is not None else None
-            for iden in self._mapCommasToNulls(children)
+            self.visitIdentifier(iden) if iden is not None else None
+            for iden in self._map_commas_to_nulls(children)
         ]
 
     def buildVariableDeclarationList(
@@ -1216,19 +1176,18 @@ class SGPVisitor(SolidityVisitor):
         i = 0
         return [
             self.buildVariableDeclaration(decl) if decl is not None else None
-            for decl in self._mapCommasToNulls(ctx.children or [])
+            for decl in self._map_commas_to_nulls(ctx.children or [])
         ]
 
     def buildVariableDeclaration(
         self, ctx: SP.VariableDeclarationContext
     ) -> VariableDeclaration:
         storageLocation = (
-            self._toText(ctx.storageLocation()) if ctx.storageLocation() else None
+            self._to_text(ctx.storageLocation()) if ctx.storageLocation() else None
         )
         identifierCtx = ctx.identifier()
         result = VariableDeclaration(
-            type="VariableDeclaration",
-            name=self._toText(identifierCtx),
+            name=self._to_text(identifierCtx),
             identifier=self.visitIdentifier(identifierCtx),
             type_name=self.visitTypeName(ctx.typeName()),
             storage_location=storageLocation,
@@ -1242,7 +1201,7 @@ class SGPVisitor(SolidityVisitor):
     def visitImportDirective(
         self, ctx: SP.ImportDirectiveContext
     ) -> ImportDirective:
-        pathString = self._toText(ctx.importPath())
+        pathString = self._to_text(ctx.importPath())
         unitAlias = None
         unitAliasIdentifier = None
         symbolAliases = None
@@ -1250,9 +1209,9 @@ class SGPVisitor(SolidityVisitor):
 
         if len(ctx.importDeclaration()) > 0:
             symbolAliases = [
-                [self._toText(decl.identifier(0)), self._toText(decl.identifier(1))]
+                [self._to_text(decl.identifier(0)), self._to_text(decl.identifier(1))]
                 if len(decl.identifier()) > 1
-                else [self._toText(decl.identifier(0)), None]
+                else [self._to_text(decl.identifier(0)), None]
                 for decl in ctx.importDeclaration()
             ]
             symbolAliasesIdentifiers = [
@@ -1270,11 +1229,11 @@ class SGPVisitor(SolidityVisitor):
                 pass
             elif len(identifierCtxList) == 1:
                 aliasIdentifierCtx = ctx.identifier(0)
-                unitAlias = self._toText(aliasIdentifierCtx)
+                unitAlias = self._to_text(aliasIdentifierCtx)
                 unitAliasIdentifier = self.visitIdentifier(aliasIdentifierCtx)
             elif len(identifierCtxList) == 2:
                 aliasIdentifierCtx = ctx.identifier(1)
-                unitAlias = self._toText(aliasIdentifierCtx)
+                unitAlias = self._to_text(aliasIdentifierCtx)
                 unitAliasIdentifier = self.visitIdentifier(aliasIdentifierCtx)
             else:
                 raise AssertionError("an import should have one or two identifiers")
@@ -1282,7 +1241,6 @@ class SGPVisitor(SolidityVisitor):
         path = pathString[1:-1]
 
         pathLiteral = StringLiteral(
-            type="StringLiteral",
             value=path,
             parts=[path],
             is_unicode=[
@@ -1291,7 +1249,6 @@ class SGPVisitor(SolidityVisitor):
         )
 
         node = ImportDirective(
-            type="ImportDirective",
             path=path,
             path_literal=self._add_meta(pathLiteral, ctx.importPath()),
             unit_alias=unitAlias,
@@ -1309,7 +1266,7 @@ class SGPVisitor(SolidityVisitor):
             VariableDeclaration(
                 type="VariableDeclaration",
                 type_name=self.visit(paramCtx.typeName()),
-                name=self._toText(paramCtx.identifier())
+                name=self._to_text(paramCtx.identifier())
                 if paramCtx.identifier()
                 else None,
                 is_state_var=False,
@@ -1333,17 +1290,16 @@ class SGPVisitor(SolidityVisitor):
     ) -> InlineAssemblyStatement:
         language = None
         if ctx.StringLiteralFragment():
-            language = self._toText(ctx.StringLiteralFragment())
+            language = self._to_text(ctx.StringLiteralFragment())
             language = language[1:-1]
 
         flags = []
         flag = ctx.inlineAssemblyStatementFlag()
         if flag is not None:
-            flagString = self._toText(flag.stringLiteral())
+            flagString = self._to_text(flag.stringLiteral())
             flags.append(flagString[1:-1])
 
         node = InlineAssemblyStatement(
-            type="InlineAssemblyStatement",
             language=language,
             flags=flags,
             body=self.visitAssemblyBlock(ctx.assemblyBlock()),
@@ -1355,7 +1311,6 @@ class SGPVisitor(SolidityVisitor):
         operations = [self.visitAssemblyItem(item) for item in ctx.assemblyItem()]
 
         node = AssemblyBlock(
-            type="AssemblyBlock",
             operations=operations,
         )
 
@@ -1372,10 +1327,9 @@ class SGPVisitor(SolidityVisitor):
             return self.visitHexLiteral(ctx.hexLiteral())
 
         if ctx.stringLiteral():
-            text = self._toText(ctx.stringLiteral())
+            text = self._to_text(ctx.stringLiteral())
             value = text[1:-1]
             node = StringLiteral(
-                type="StringLiteral",
                 value=value,
                 parts=[value],
                 is_unicode=[
@@ -1386,16 +1340,12 @@ class SGPVisitor(SolidityVisitor):
             return self._add_meta(node, ctx)
 
         if ctx.BreakKeyword():
-            node = Break(
-                type="Break",
-            )
+            node = Break()
 
             return self._add_meta(node, ctx)
 
         if ctx.ContinueKeyword():
-            node = Continue(
-                type="Continue",
-            )
+            node = Continue()
 
             return self._add_meta(node, ctx)
 
@@ -1407,14 +1357,13 @@ class SGPVisitor(SolidityVisitor):
         return self.visit(ctx.getChild(0))
 
     def visitAssemblyCall(self, ctx: SP.AssemblyCallContext) -> AssemblyCall:
-        functionName = self._toText(ctx.getChild(0))
+        functionName = self._to_text(ctx.getChild(0))
         args = [
             self.visitAssemblyExpression(assemblyExpr)
             for assemblyExpr in ctx.assemblyExpression()
         ]
 
         node = AssemblyCall(
-            type="AssemblyCall",
             function_name=functionName,
             arguments=args,
         )
@@ -1433,10 +1382,9 @@ class SGPVisitor(SolidityVisitor):
         text = None
 
         if ctx.stringLiteral():
-            text = self._toText(ctx)
+            text = self._to_text(ctx)
             value = text[1:-1]
             node = StringLiteral(
-                type="StringLiteral",
                 value=value,
                 parts=[value],
                 is_unicode=[
@@ -1448,24 +1396,21 @@ class SGPVisitor(SolidityVisitor):
 
         if ctx.BooleanLiteral():
             node = BooleanLiteral(
-                type="BooleanLiteral",
-                value=self._toText(ctx.BooleanLiteral()) == "true",
+                value=self._to_text(ctx.BooleanLiteral()) == "true",
             )
 
             return self._add_meta(node, ctx)
 
         if ctx.DecimalNumber():
             node = DecimalNumber(
-                type="DecimalNumber",
-                value=self._toText(ctx),
+                value=self._to_text(ctx),
             )
 
             return self._add_meta(node, ctx)
 
         if ctx.HexNumber():
             node = HexNumber(
-                type="HexNumber",
-                value=self._toText(ctx),
+                value=self._to_text(ctx),
             )
 
             return self._add_meta(node, ctx)
@@ -1477,7 +1422,6 @@ class SGPVisitor(SolidityVisitor):
 
     def visitAssemblySwitch(self, ctx: SP.AssemblySwitchContext) -> AssemblySwitch:
         node = AssemblySwitch(
-            type="AssemblySwitch",
             expression=self.visitAssemblyExpression(ctx.assemblyExpression()),
             cases=[self.visitAssemblyCase(c) for c in ctx.assemblyCase()],
         )
@@ -1486,11 +1430,10 @@ class SGPVisitor(SolidityVisitor):
 
     def visitAssemblyCase(self, ctx: SP.AssemblyCaseContext) -> AssemblyCase:
         value = None
-        if self._toText(ctx.getChild(0)) == "case":
+        if self._to_text(ctx.getChild(0)) == "case":
             value = self.visitAssemblyLiteral(ctx.assemblyLiteral())
 
         node = AssemblyCase(
-            type="AssemblyCase",
             block=self.visitAssemblyBlock(ctx.assemblyBlock()),
             value=value,
             default=(value is None),
@@ -1519,7 +1462,6 @@ class SGPVisitor(SolidityVisitor):
             expression = self.visitAssemblyExpression(ctx.assemblyExpression())
 
         node = AssemblyLocalDefinition(
-            type="AssemblyLocalDefinition",
             names=names,
             expression=expression,
         )
@@ -1547,8 +1489,7 @@ class SGPVisitor(SolidityVisitor):
         )
 
         node = AssemblyFunctionDefinition(
-            type="AssemblyFunctionDefinition",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             arguments=args,
             return_arguments=returnArgs,
             body=self.visitAssemblyBlock(ctx.assemblyBlock()),
@@ -1571,7 +1512,6 @@ class SGPVisitor(SolidityVisitor):
             ]
 
         node = AssemblyAssignment(
-            type="AssemblyAssignment",
             names=names,
             expression=self.visitAssemblyExpression(ctx.assemblyExpression()),
         )
@@ -1583,7 +1523,6 @@ class SGPVisitor(SolidityVisitor):
     ) -> AssemblyMemberAccess:
         accessed, member = ctx.identifier()
         node = AssemblyMemberAccess(
-            type="AssemblyMemberAccess",
             expression=self.visitIdentifier(accessed),
             member_name=self.visitIdentifier(member),
         )
@@ -1592,16 +1531,14 @@ class SGPVisitor(SolidityVisitor):
 
     def visitLabelDefinition(self, ctx: SP.LabelDefinitionContext):
         node = LabelDefinition(
-            type="LabelDefinition",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
         )
 
         return self._add_meta(node, ctx)
 
     def visitAssemblyStackAssignment(self, ctx: SP.AssemblyStackAssignmentContext):
         node = AssemblyStackAssignment(
-            type="AssemblyStackAssignment",
-            name=self._toText(ctx.identifier()),
+            name=self._to_text(ctx.identifier()),
             expression=self.visitAssemblyExpression(ctx.assemblyExpression()),
         )
 
@@ -1609,7 +1546,6 @@ class SGPVisitor(SolidityVisitor):
 
     def visitAssemblyFor(self, ctx: SP.AssemblyForContext):
         node = AssemblyFor(
-            type="AssemblyFor",
             pre=self.visit(ctx.getChild(1)),
             condition=self.visit(ctx.getChild(2)),
             post=self.visit(ctx.getChild(3)),
@@ -1620,7 +1556,6 @@ class SGPVisitor(SolidityVisitor):
 
     def visitAssemblyIf(self, ctx: SP.AssemblyIfContext):
         node = AssemblyIf(
-            type="AssemblyIf",
             condition=self.visitAssemblyExpression(ctx.assemblyExpression()),
             body=self.visitAssemblyBlock(ctx.assemblyBlock()),
         )
@@ -1630,20 +1565,16 @@ class SGPVisitor(SolidityVisitor):
     def visitContinueStatement(
         self, ctx: SP.ContinueStatementContext
     ) -> ContinueStatement:
-        node = ContinueStatement(
-            type="ContinueStatement",
-        )
+        node = ContinueStatement()
 
         return self._add_meta(node, ctx)
 
     def visitBreakStatement(self, ctx: SP.BreakStatementContext) -> BreakStatement:
-        node = BreakStatement(
-            type="BreakStatement",
-        )
+        node = BreakStatement()
 
         return self._add_meta(node, ctx)
 
-    def _toText(self, ctx: ParserRuleContext or ParseTree) -> str:
+    def _to_text(self, ctx: ParserRuleContext or ParseTree) -> str:
         text = ctx.getText()
         if text is None:
             raise ValueError("Assertion error: text should never be undefined")

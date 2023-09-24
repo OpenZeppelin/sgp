@@ -13,8 +13,13 @@ from .sgp_error_listener import SGPErrorListener
 from .tokens import build_token_list
 from .utils import string_from_snake_to_camel_case
 
+
 class ParserError(Exception):
-    def __init__(self, errors):
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, errors) -> None:
         super().__init__()
         error = errors[0]
         self.message = f"{error['message']} ({error['line']}:{error['column']})"
@@ -27,6 +32,10 @@ def parse(
     dump_json: bool = False,
     dump_path: str = "./out",
 ) -> Dict:
+    """
+    #TODO: add docstring
+    """
+
     input_stream = ANTLRInputStream(input_string)
     lexer = SolidityLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
@@ -65,7 +74,11 @@ def parse(
         os.makedirs(dump_path, exist_ok=True)
         with open(os.path.join(dump_path, "ast.json"), "w") as f:
             s = simplejson.dumps(
-                ast, default=lambda obj: { string_from_snake_to_camel_case(k): v for k, v in obj.__dict__.items()}
+                ast,
+                default=lambda obj: {
+                    string_from_snake_to_camel_case(k): v
+                    for k, v in obj.__dict__.items()
+                },
             )
             f.write(s)
     return ast
