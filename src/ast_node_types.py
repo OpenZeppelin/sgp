@@ -50,15 +50,17 @@ class BaseASTNode:
     """
 
     def __init__(
-        self,
-        type: str,
-        range: Range = None,
-        loc: Optional[Location] = None
+        self, type: str = None, range: Range = None, loc: Optional[Location] = None
     ) -> None:
-        self.type: str = type
+        self.type: str = type if type else self.type
         self.loc: Location = loc
         self.range: Range = range
-        
+
+    def __new__(cls, *args, **kwargs) -> "BaseASTNode":
+        o = object.__new__(cls)
+        setattr(o, "type", cls.__name__)
+        return o
+
     def add_loc(self, loc: Location) -> None:
         self.loc = loc
 
@@ -68,12 +70,11 @@ class BaseASTNode:
 
 class SourceUnit(BaseASTNode):
     """
-    A root node of the AST. Contains all the nodes in the source code. Basically is a parsed compilation unit.
+    A root node of the AST. Contains all the nodes in the source code. Basically is a parsed compilation unit (a compound file).
     """
 
     def __init__(self, children: List[BaseASTNode]) -> None:
-        super().__init__("SourceUnit")
-        self.children=children
+        self.children = children
 
 
 class ContractDefinition(BaseASTNode):
@@ -88,7 +89,6 @@ class ContractDefinition(BaseASTNode):
         kind: str,
         children: List[BaseASTNode],
     ) -> None:
-        super().__init__("ContractDefinition")
         self.name: str = name
         self.base_contracts: List["InheritanceSpecifier"] = base_contracts
         self.kind: str = kind
@@ -96,28 +96,41 @@ class ContractDefinition(BaseASTNode):
 
 
 class InheritanceSpecifier(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self, base_name: "UserDefinedTypeName", arguments: List["Expression"]
     ) -> None:
-        super().__init__("InheritanceSpecifier")
         self.base_name: "UserDefinedTypeName" = base_name
         self.arguments: List["Expression"] = arguments
 
 
 class UserDefinedTypeName(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(self, name_path: str) -> None:
-        super().__init__("UserDefinedTypeName")
         self.name_path: str = name_path
 
 
 class PragmaDirective(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(self, name: str, value: str) -> None:
-        super().__init__("PragmaDirective")
         self.name: str = name
         self.value: str = value
 
 
 class ImportDirective(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         path: str,
@@ -129,7 +142,6 @@ class ImportDirective(BaseASTNode):
             List[Tuple["Identifier", Optional["Identifier"]]]
         ] = None,
     ) -> None:
-        super().__init__("ImportDirective")
         self.path: str = path
         self.path_literal: "StringLiteral" = path_literal
         self.unit_alias: Optional[str] = unit_alias
@@ -141,574 +153,771 @@ class ImportDirective(BaseASTNode):
 
 
 class StateVariableDeclaration(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         variables: List["StateVariableDeclarationVariable"],
         initial_value: Optional["Expression"] = None,
     ) -> None:
-        super().__init__("StateVariableDeclaration")
         self.variables: List["StateVariableDeclarationVariable"] = variables
         self.initial_value: Optional["Expression"] = initial_value
 
 
 class FileLevelConstant(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         type_name: "TypeName",
         name: str,
         initial_value: "Expression",
         is_declared_const: bool,
-        isImmutable: bool,
+        is_immutable: bool,
     ) -> None:
-        super().__init__("FileLevelConstant")
         self.type_name: "TypeName" = type_name
         self.name: str = name
         self.initial_value: "Expression" = initial_value
         self.is_declared_const: bool = is_declared_const
-        self.is_immutable: bool = isImmutable
+        self.is_immutable: bool = is_immutable
 
 
 class UsingForDeclaration(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        typeName: Optional["TypeName"],
+        type_name: Optional["TypeName"],
         functions: List[str],
         operators: List[Optional[str]],
-        libraryName: Optional[str] = None,
-        isGlobal: bool = False,
-    ):
-        super().__init__("UsingForDeclaration")
-        self.typeName = typeName
-        self.functions = functions
-        self.operators = operators
-        self.libraryName = libraryName
-        self.isGlobal = isGlobal
+        library_name: Optional[str] = None,
+        is_global: bool = False,
+    ) -> None:
+        self.type_name: Optional["TypeName"] = type_name
+        self.functions: List[str] = functions
+        self.operators: List[Optional[str]] = operators
+        self.library_name: Optional[str] = library_name
+        self.is_global: bool = is_global
 
 
 class StructDefinition(BaseASTNode):
-    def __init__(self, name: str, members: List["VariableDeclaration"]):
-        super().__init__("StructDefinition")
-        self.name = name
-        self.members = members
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str, members: List["VariableDeclaration"]) -> None:
+        self.name: str = name
+        self.members: List["VariableDeclaration"] = members
 
 
 class ModifierDefinition(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         name: str,
         parameters: Optional[List["VariableDeclaration"]] = None,
-        isVirtual: bool = False,
+        is_virtual: bool = False,
         override: Optional[List["UserDefinedTypeName"]] = None,
         body: Optional["Block"] = None,
-    ):
-        super().__init__("ModifierDefinition")
-        self.name = name
-        self.parameters = parameters
-        self.isVirtual = isVirtual
-        self.override = override
-        self.body = body
+    ) -> None:
+        self.name: str = name
+        self.parameters: Optional[List["VariableDeclaration"]] = parameters
+        self.is_virtual: bool = is_virtual
+        self.override: Optional[List["UserDefinedTypeName"]] = override
+        self.body: Optional["Block"] = body
 
 
 class ModifierInvocation(BaseASTNode):
-    def __init__(self, name: str, arguments: Optional[List["Expression"]] = None):
-        super().__init__("ModifierInvocation")
-        self.name = name
-        self.arguments = arguments
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(
+        self, name: str, arguments: Optional[List["Expression"]] = None
+    ) -> None:
+        self.name: str = name
+        self.arguments: Optional[List["Expression"]] = arguments
 
 
 class FunctionDefinition(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         name: Optional[str],
         parameters: List["VariableDeclaration"],
         modifiers: List["ModifierInvocation"],
-        stateMutability: Optional[str] = None,
-        visibility: str = "default",
-        returnParameters: Optional[List["VariableDeclaration"]] = None,
+        state_mutability: Optional[str] = None,  # TODO: make enum
+        visibility: str = "default",  # TODO: make enum
+        return_parameters: Optional[List["VariableDeclaration"]] = None,
         body: Optional["Block"] = None,
         override: Optional[List["UserDefinedTypeName"]] = None,
-        isConstructor: bool = False,
-        isReceiveEther: bool = False,
-        isFallback: bool = False,
-        isVirtual: bool = False,
-    ):
-        super().__init__("FunctionDefinition")
-        self.name = name
-        self.parameters = parameters
-        self.modifiers = modifiers
-        self.stateMutability = stateMutability
-        self.visibility = visibility
-        self.returnParameters = returnParameters
-        self.body = body
-        self.override = override
-        self.isConstructor = isConstructor
-        self.isReceiveEther = isReceiveEther
-        self.isFallback = isFallback
-        self.isVirtual = isVirtual
+        is_constructor: bool = False,
+        is_receive_ether: bool = False,
+        is_fallback: bool = False,
+        is_virtual: bool = False,
+    ) -> None:
+        self.name: Optional[str] = name
+        self.parameters: List["VariableDeclaration"] = parameters
+        self.modifiers: List["ModifierInvocation"] = modifiers
+        self.state_mutability: Optional[str] = state_mutability
+        self.visibility: str = visibility
+        self.return_parameters: Optional[
+            List["VariableDeclaration"]
+        ] = return_parameters
+        self.body: Optional["Block"] = body
+        self.override: Optional[List["UserDefinedTypeName"]] = override
+        self.is_constructor: bool = is_constructor
+        self.is_receive_ether: bool = is_receive_ether
+        self.is_fallback: bool = is_fallback
+        self.is_virtual: bool = is_virtual
 
 
 class CustomErrorDefinition(BaseASTNode):
-    def __init__(self, name: str, parameters: List["VariableDeclaration"]):
-        super().__init__("CustomErrorDefinition")
-        self.name = name
-        self.parameters = parameters
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str, parameters: List["VariableDeclaration"]) -> None:
+        self.name: str = name
+        self.parameters: List["VariableDeclaration"] = parameters
 
 
 class TypeDefinition(BaseASTNode):
-    def __init__(self, name: str, definition: "ElementaryTypeName"):
-        super().__init__("TypeDefinition")
-        self.name = name
-        self.definition = definition
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str, definition: "ElementaryTypeName") -> None:
+        self.name: str = name
+        self.definition: "ElementaryTypeName" = definition
 
 
 class RevertStatement(BaseASTNode):
-    def __init__(self, revertCall: "FunctionCall"):
-        super().__init__("RevertStatement")
-        self.revertCall = revertCall
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, revert_call: "FunctionCall") -> None:
+        self.revert_call: "FunctionCall" = revert_call
 
 
 class EventDefinition(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
-        self, name: str, parameters: List["VariableDeclaration"], isAnonymous: bool
-    ):
-        super().__init__("EventDefinition")
-        self.name = name
-        self.parameters = parameters
-        self.isAnonymous = isAnonymous
+        self, name: str, parameters: List["VariableDeclaration"], is_anonymous: bool
+    ) -> None:
+        self.name: str = name
+        self.parameters: List["VariableDeclaration"] = parameters
+        self.is_anonymous: bool = is_anonymous
 
 
 class EnumValue(BaseASTNode):
-    def __init__(self, name: str):
-        super().__init__("EnumValue")
-        self.name = name
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str) -> None:
+        self.name: str = name
 
 
 class EnumDefinition(BaseASTNode):
-    def __init__(self, name: str, members: List[EnumValue]):
-        super().__init__("EnumDefinition")
-        self.name = name
-        self.members = members
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str, members: List[EnumValue]) -> None:
+        self.name: str = name
+        self.members: List[EnumValue] = members
 
 
 class VariableDeclaration(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        isIndexed: bool,
-        isStateVar: bool,
-        typeName: Optional["TypeName"] = None,
+        is_indexed: bool,
+        is_state_var: bool,
+        type_name: Optional["TypeName"] = None,
         name: Optional[str] = None,
         identifier: Optional["Identifier"] = None,
-        isDeclaredConst: Optional[bool] = None,
-        storageLocation: Optional[str] = None,
+        is_declared_const: Optional[bool] = None,
+        storage_location: Optional[str] = None,  # TODO: make enum
         expression: Optional["Expression"] = None,
-        visibility: Optional[str] = None,
-    ):
-        super().__init__("VariableDeclaration")
-        self.isIndexed = isIndexed
-        self.isStateVar = isStateVar
-        self.typeName = typeName
-        self.name = name
-        self.identifier = identifier
-        self.isDeclaredConst = isDeclaredConst
-        self.storageLocation = storageLocation
-        self.expression = expression
-        self.visibility = visibility
+        visibility: Optional[str] = None,  # TODO: make enum
+    ) -> None:
+        self.is_indexed: bool = is_indexed
+        self.is_state_var: bool = is_state_var
+        self.type_name: Optional["TypeName"] = type_name
+        self.name: Optional[str] = name
+        self.identifier: Optional["Identifier"] = identifier
+        self.is_declared_const: Optional[bool] = is_declared_const
+        self.storage_location: Optional[str] = storage_location
+        self.expression: Optional["Expression"] = expression
+        self.visibility: Optional[str] = visibility
 
 
 class StateVariableDeclarationVariable(VariableDeclaration):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        isImmutable: bool,
+        is_immutable: bool,
         override: Optional[List["UserDefinedTypeName"]] = None,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(**kwargs)
-        self.isImmutable = isImmutable
-        self.override = override
+        self.is_immutable: bool = is_immutable
+        self.override: Optional[List["UserDefinedTypeName"]] = override
 
 
 class ArrayTypeName(BaseASTNode):
-    def __init__(self, baseTypeName: "TypeName", length: Optional["Expression"] = None):
-        super().__init__("ArrayTypeName")
-        self.baseTypeName = baseTypeName
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(
+        self, base_type_name: "TypeName", length: Optional["Expression"] = None
+    ) -> None:
+        self.base_type_name = base_type_name
         self.length = length
 
 
 class Mapping(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        keyType: Union["ElementaryTypeName", "UserDefinedTypeName"],
-        keyName: Optional["Identifier"] = None,
-        valueType: "TypeName" = None,
-        valueName: Optional["Identifier"] = None,
-    ):
-        super().__init__("Mapping")
-        self.keyType = keyType
-        self.keyName = keyName
-        self.valueType = valueType
-        self.valueName = valueName
+        key_type: Union["ElementaryTypeName", "UserDefinedTypeName"],
+        key_name: Optional["Identifier"] = None,
+        value_type: "TypeName" = None,
+        value_name: Optional["Identifier"] = None,
+    ) -> None:
+        self.key_type: Union["ElementaryTypeName", "UserDefinedTypeName"] = key_type
+        self.key_name: Optional["Identifier"] = key_name
+        self.value_type: "TypeName" = value_type
+        self.value_name: Optional["Identifier"] = value_name
 
 
 class FunctionTypeName(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        parameterTypes: List["VariableDeclaration"],
-        returnTypes: List["VariableDeclaration"],
-        visibility: str,
-        stateMutability: Optional[str] = None,
-    ):
-        super().__init__("FunctionTypeName")
-        self.parameterTypes = parameterTypes
-        self.returnTypes = returnTypes
-        self.visibility = visibility
-        self.stateMutability = stateMutability
+        parameter_types: List["VariableDeclaration"],
+        return_types: List["VariableDeclaration"],
+        visibility: str,  # TODO: make enum
+        state_mutability: Optional[str] = None,  # TODO: make enum
+    ) -> None:
+        self.parameter_types: List["VariableDeclaration"] = parameter_types
+        self.return_types: List["VariableDeclaration"] = return_types
+        self.visibility: str = visibility
+        self.state_mutability: Optional[str] = state_mutability
 
 
 class Block(BaseASTNode):
-    def __init__(self, statements: List[BaseASTNode]):
-        super().__init__("Block")
-        self.statements = statements
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, statements: List[BaseASTNode]) -> None:
+        self.statements: List[BaseASTNode] = statements
 
 
 class ExpressionStatement(BaseASTNode):
-    def __init__(self, expression: Optional["Expression"] = None):
-        super().__init__("ExpressionStatement")
-        self.expression = expression
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, expression: Optional["Expression"] = None) -> None:
+        self.expression: Optional["Expression"] = expression
 
 
 class IfStatement(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         condition: "Expression",
-        trueBody: "Statement",
-        falseBody: Optional["Statement"] = None,
-    ):
-        super().__init__("IfStatement")
-        self.condition = condition
-        self.trueBody = trueBody
-        self.falseBody = falseBody
+        true_body: "Statement",
+        false_body: Optional["Statement"] = None,
+    ) -> None:
+        self.condition: "Expression" = condition
+        self.true_body: "Statement" = true_body
+        self.false_body: Optional["Statement"] = false_body
 
 
 class UncheckedStatement(BaseASTNode):
-    def __init__(self, block: "Block"):
-        super().__init__("UncheckedStatement")
-        self.block = block
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, block: "Block") -> None:
+        self.block: "Block" = block
 
 
 class TryStatement(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         expression: "Expression",
-        returnParameters: Optional[List["VariableDeclaration"]] = None,
+        return_parameters: Optional[List["VariableDeclaration"]] = None,
         body: "Block" = None,
-        catchClauses: List["CatchClause"] = None,
-    ):
-        super().__init__("TryStatement")
-        self.expression = expression
-        self.returnParameters = returnParameters
-        self.body = body
-        self.catchClauses = catchClauses or []
+        catch_clauses: List["CatchClause"] = [],
+    ) -> None:
+        self.expression: "Expression" = expression
+        self.return_parameters: Optional[
+            List["VariableDeclaration"]
+        ] = return_parameters
+        self.body: "Block" = body
+        self.catch_clauses: List["CatchClause"] = catch_clauses
 
 
 class CatchClause(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        isReasonStringType: bool,
+        is_reason_string_type: bool,
         kind: Optional[str] = None,
         parameters: Optional[List["VariableDeclaration"]] = None,
         body: "Block" = None,
-    ):
-        super().__init__("CatchClause")
-        self.isReasonStringType = isReasonStringType
-        self.kind = kind
-        self.parameters = parameters
-        self.body = body
+    ) -> None:
+        self.is_reason_string_type: bool = is_reason_string_type
+        self.kind: Optional[str] = kind
+        self.parameters: Optional[List["VariableDeclaration"]] = parameters
+        self.body: "Block" = body
 
 
 class WhileStatement(BaseASTNode):
-    def __init__(self, condition: "Expression", body: "Statement"):
-        super().__init__("WhileStatement")
-        self.condition = condition
-        self.body = body
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, condition: "Expression", body: "Statement") -> None:
+        self.condition: "Expression" = condition
+        self.body: "Statement" = body
 
 
 class ForStatement(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
-        initExpression: Optional["SimpleStatement"] = None,
-        conditionExpression: Optional["Expression"] = None,
-        loopExpression: "ExpressionStatement" = None,
-        body: "Statement" = None,
-    ):
-        super().__init__("ForStatement")
-        self.initExpression = initExpression
-        self.conditionExpression = conditionExpression
-        self.loopExpression = loopExpression
-        self.body = body
+        init_expression: Optional["SimpleStatement"] = None,
+        condition_expression: Optional["Expression"] = None,
+        loop_expression: Optional["ExpressionStatement"] = None,
+        body: Optional["Statement"] = None,
+    ) -> None:
+        self.init_expression: Optional["SimpleStatement"] = init_expression
+        self.condition_expression: Optional["Expression"] = condition_expression
+        self.loop_expression: Optional["ExpressionStatement"] = loop_expression
+        self.body: Optional["Statement"] = body
 
 
 class InlineAssemblyStatement(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         language: Optional[str] = None,
-        flags: List[str] = None,
-        body: "AssemblyBlock" = None,
-    ):
-        super().__init__("InlineAssemblyStatement")
-        self.language = language
-        self.flags = flags or []
-        self.body = body
+        flags: List[str] = [],
+        body: Optional["AssemblyBlock"] = None,
+    ) -> None:
+        self.language: Optional[str] = language
+        self.flags: List[str] = flags
+        self.body: Optional["AssemblyBlock"] = body
 
 
 class DoWhileStatement(BaseASTNode):
-    def __init__(self, condition: "Expression", body: "Statement"):
-        super().__init__("DoWhileStatement")
-        self.condition = condition
-        self.body = body
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, condition: "Expression", body: "Statement") -> None:
+        self.condition: "Expression" = condition
+        self.body: "Statement" = body
 
 
 class ContinueStatement(BaseASTNode):
-    def __init__(self):
-        super().__init__("ContinueStatement")
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self) -> None:
+        pass
 
 
 class Break(BaseASTNode):
-    def __init__(self):
-        super().__init__("Break")
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self) -> None:
+        pass
 
 
 class Continue(BaseASTNode):
-    def __init__(self):
-        super().__init__("Continue")
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self) -> None:
+        pass
 
 
 class BreakStatement(BaseASTNode):
-    def __init__(self):
-        super().__init__("BreakStatement")
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self) -> None:
+        pass
 
 
 class ReturnStatement(BaseASTNode):
-    def __init__(self, expression: Optional["Expression"] = None):
-        super().__init__("ReturnStatement")
-        self.expression = expression
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, expression: Optional["Expression"] = None) -> None:
+        self.expression: Optional["Expression"] = expression
 
 
 class EmitStatement(BaseASTNode):
-    def __init__(self, eventCall: "FunctionCall"):
-        super().__init__("EmitStatement")
-        self.eventCall = eventCall
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, event_call: "FunctionCall") -> None:
+        self.event_call: "FunctionCall" = event_call
 
 
 class ThrowStatement(BaseASTNode):
-    def __init__(self):
-        super().__init__("ThrowStatement")
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self) -> None:
+        pass
 
 
 class VariableDeclarationStatement(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         variables: List[Union[BaseASTNode, None]],
-        initialValue: Optional["Expression"] = None,
-    ):
-        super().__init__("VariableDeclarationStatement")
-        self.variables = variables
-        self.initialValue = initialValue
+        initial_value: Optional["Expression"] = None,
+    ) -> None:
+        self.variables: List[Union[BaseASTNode, None]] = variables
+        self.initial_value: Optional["Expression"] = initial_value
 
 
 class ElementaryTypeName(BaseASTNode):
-    def __init__(self, name: str, stateMutability: Optional[str] = None):
-        super().__init__("ElementaryTypeName")
-        self.name = name
-        self.stateMutability = stateMutability
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str, state_mutability: Optional[str] = None) -> None:
+        self.name: str = name
+        self.stateMutability: Optional[str] = state_mutability  # TODO: make enum
 
 
 class FunctionCall(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         expression: "Expression",
         arguments: List["Expression"],
         names: List[str],
         identifiers: List["Identifier"],
-    ):
-        super().__init__("FunctionCall")
-        self.expression = expression
-        self.arguments = arguments
-        self.names = names
-        self.identifiers = identifiers
+    ) -> None:
+        self.expression: "Expression" = expression
+        self.arguments: List["Expression"] = arguments
+        self.names: List[str] = names
+        self.identifiers: List["Identifier"] = identifiers
 
 
 class AssemblyBlock(BaseASTNode):
-    def __init__(self, operations: List["AssemblyItem"]):
-        super().__init__("AssemblyBlock")
-        self.operations = operations
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, operations: List["AssemblyItem"]) -> None:
+        self.operations: List["AssemblyItem"] = operations
 
 
 class AssemblyCall(BaseASTNode):
-    def __init__(self, functionName: str, arguments: List["AssemblyExpression"]):
-        super().__init__("AssemblyCall")
-        self.functionName = functionName
-        self.arguments = arguments
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(
+        self, function_name: str, arguments: List["AssemblyExpression"]
+    ) -> None:
+        self.functionName: str = function_name
+        self.arguments: List["AssemblyExpression"] = arguments
 
 
 class AssemblyLocalDefinition(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         names: Union[List["Identifier"], List["AssemblyMemberAccess"]],
         expression: Optional["AssemblyExpression"] = None,
-    ):
-        super().__init__("AssemblyLocalDefinition")
-        self.names = names
-        self.expression = expression
+    ) -> None:
+        self.names: Union[List["Identifier"], List["AssemblyMemberAccess"]] = names
+        self.expression: Optional["AssemblyExpression"] = expression
 
 
 class AssemblyAssignment(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         names: Union[List["Identifier"], List["AssemblyMemberAccess"]],
         expression: "AssemblyExpression",
-    ):
-        super().__init__("AssemblyAssignment")
-        self.names = names
-        self.expression = expression
+    ) -> None:
+        self.names: Union[List["Identifier"], List["AssemblyMemberAccess"]] = names
+        self.expression: "AssemblyExpression" = expression
 
 
 class AssemblyStackAssignment(BaseASTNode):
-    def __init__(self, name: str, expression: "AssemblyExpression"):
-        super().__init__("AssemblyStackAssignment")
-        self.name = name
-        self.expression = expression
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str, expression: "AssemblyExpression") -> None:
+        self.name: str = name
+        self.expression: "AssemblyExpression" = expression
 
 
 class LabelDefinition(BaseASTNode):
-    def __init__(self, name: str):
-        super().__init__("LabelDefinition")
-        self.name = name
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str) -> None:
+        self.name: str = name
 
 
 class AssemblySwitch(BaseASTNode):
-    def __init__(self, expression: "AssemblyExpression", cases: List["AssemblyCase"]):
-        super().__init__("AssemblySwitch")
-        self.expression = expression
-        self.cases = cases
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(
+        self, expression: "AssemblyExpression", cases: List["AssemblyCase"]
+    ) -> None:
+        self.expression: "AssemblyExpression" = expression
+        self.cases: List["AssemblyCase"] = cases
 
 
 class AssemblyCase(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
-        self,
-        value: Union["AssemblyLiteral", None],
-        block: "AssemblyBlock",
-        default: bool,
-    ):
-        super().__init__("AssemblyCase")
-        self.value = value
-        self.block = block
-        self.default = default
+        self, value: Optional["AssemblyLiteral"], block: "AssemblyBlock", default: bool
+    ) -> None:
+        self.value: Optional["AssemblyLiteral"] = value
+        self.block: "AssemblyBlock" = block
+        self.default: bool = default
 
 
 class AssemblyFunctionDefinition(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         name: str,
         arguments: List["Identifier"],
-        returnArguments: List["Identifier"],
+        return_arguments: List["Identifier"],
         body: "AssemblyBlock",
-    ):
-        super().__init__("AssemblyFunctionDefinition")
-        self.name = name
-        self.arguments = arguments
-        self.returnArguments = returnArguments
-        self.body = body
+    ) -> None:
+        self.name: str = name
+        self.arguments: List["Identifier"] = arguments
+        self.return_arguments: List["Identifier"] = return_arguments
+        self.body: "AssemblyBlock" = body
 
 
 class AssemblyFor(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         pre: Union["AssemblyBlock", "AssemblyExpression"],
         condition: "AssemblyExpression",
         post: Union["AssemblyBlock", "AssemblyExpression"],
         body: "AssemblyBlock",
-    ):
-        super().__init__("AssemblyFor")
-        self.pre = pre
-        self.condition = condition
-        self.post = post
-        self.body = body
+    ) -> None:
+        self.pre: Union["AssemblyBlock", "AssemblyExpression"] = pre
+        self.condition: "AssemblyExpression" = condition
+        self.post: Union["AssemblyBlock", "AssemblyExpression"] = post
+        self.body: "AssemblyBlock" = body
 
 
 class AssemblyIf(BaseASTNode):
-    def __init__(self, condition: "AssemblyExpression", body: "AssemblyBlock"):
-        super().__init__("AssemblyIf")
-        self.condition = condition
-        self.body = body
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, condition: "AssemblyExpression", body: "AssemblyBlock") -> None:
+        self.condition: "AssemblyExpression" = condition
+        self.body: "AssemblyBlock" = body
 
 
 class AssemblyLiteral(BaseASTNode):
-    pass  # Placeholder class for AssemblyLiteral
+    """
+    Placeholder class for AssemblyLiteral
+    #TODO: add docstring
+    """
+
+    def __init__(self) -> None:
+        pass
 
 
 class AssemblyMemberAccess(BaseASTNode):
-    def __init__(self, expression: "Identifier", memberName: "Identifier"):
-        super().__init__("AssemblyMemberAccess")
-        self.expression = expression
-        self.memberName = memberName
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, expression: "Identifier", member_name: "Identifier") -> None:
+        self.expression: "Identifier" = expression
+        self.member_name: "Identifier" = member_name
 
 
 class NewExpression(BaseASTNode):
-    def __init__(self, typeName: "TypeName"):
-        super().__init__("NewExpression")
-        self.typeName = typeName
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, type_name: "TypeName") -> None:
+        self.type_name: "TypeName" = type_name
 
 
 class TupleExpression(BaseASTNode):
-    def __init__(self, components: List[Union[BaseASTNode, None]], isArray: bool):
-        super().__init__("TupleExpression")
-        self.components = components
-        self.isArray = isArray
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(
+        self, components: List[Union[BaseASTNode, None]], isArray: bool
+    ) -> None:
+        self.components: List[Union[BaseASTNode, None]] = components
+        self.isArray: bool = isArray
 
 
 class NameValueExpression(BaseASTNode):
-    def __init__(self, expression: "Expression", arguments: "NameValueList"):
-        super().__init__("NameValueExpression")
-        self.expression = expression
-        self.arguments = arguments
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, expression: "Expression", arguments: "NameValueList") -> None:
+        self.expression: "Expression" = expression
+        self.arguments: "NameValueList" = arguments
 
 
 class NumberLiteral(BaseASTNode):
-    def __init__(self, number: str, subdenomination: Optional[str] = None):
-        super().__init__("NumberLiteral")
-        self.number = number
-        self.subdenomination = subdenomination
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, number: str, subdenomination: Optional[str] = None) -> None:
+        self.number: str = number
+        self.subdenomination: Optional[str] = subdenomination
 
 
 class BooleanLiteral(BaseASTNode):
-    def __init__(self, value: bool):
-        super().__init__("BooleanLiteral")
-        self.value = value
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, value: bool) -> None:
+        self.value: bool = value
 
 
 class HexLiteral(BaseASTNode):
-    def __init__(self, value: str, parts: List[str]):
-        super().__init__("HexLiteral")
-        self.value = value
-        self.parts = parts
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, value: str, parts: List[str]) -> None:
+        self.value: str = value
+        self.parts: List[str] = parts
 
 
 class StringLiteral(BaseASTNode):
-    def __init__(self, value: str, parts: List[str], isUnicode: List[bool]):
-        super().__init__("StringLiteral")
-        self.value = value
-        self.parts = parts
-        self.isUnicode = isUnicode
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, value: str, parts: List[str], is_unicode: List[bool]) -> None:
+        self.value: str = value
+        self.parts: List[str] = parts
+        self.isUnicode: List[bool] = is_unicode
 
 
 class Identifier(BaseASTNode):
-    def __init__(self, name: str):
-        super().__init__("Identifier")
-        self.name = name
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, name: str) -> None:
+        self.name: str = name
 
 
 # TODO: convert to enum
-binary_op_values = [
+BINARY_OP_VALUES = (
     "+",
     "-",
     "*",
@@ -742,182 +951,181 @@ binary_op_values = [
     "%=",
     "|",
     "|=",
-]
-# BinOp = (
-#     "+", "-", "*", "/", "**", "%", "<<", ">>", "&&", "||", ",,", "&", ",", "^", "<", ">", "<=", ">=", "==", "!=", "=",
-#     ",=", "^=", "&=", "<<=", ">>=", "+=", "-=", "*=", "/=", "%=", "|", "|=",
-# )
+)
 
 # TODO: convert to enum
-unaryOpValues = ["-", "+", "++", "--", "~", "after", "delete", "!"]
-# UnaryOp = ("-", "+", "++", "--", "~", "after", "delete", "!")
+UNARY_OP_VALUES = ("-", "+", "++", "--", "~", "after", "delete", "!")
 
 
 class BinaryOperation(BaseASTNode):
-    def __init__(self, left: "Expression", right: "Expression", operator):
-        super().__init__("BinaryOperation")
-        self.left = left
-        self.right = right
-        self.operator = operator
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, left: "Expression", right: "Expression", operator: str) -> None:
+        self.left: "Expression" = left
+        self.right: "Expression" = right
+        self.operator: str = operator  # TODO: make enum
 
 
 class UnaryOperation(BaseASTNode):
-    def __init__(self, operator, subExpression: "Expression", isPrefix: bool):
-        super().__init__("UnaryOperation")
-        self.operator = operator
-        self.subExpression = subExpression
-        self.isPrefix = isPrefix
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(
+        self, operator: str, sub_expression: "Expression", is_prefix: bool
+    ) -> None:
+        self.operator: str = operator  # TODO: make enum
+        self.sub_expression: "Expression" = sub_expression
+        self.is_prefix: bool = is_prefix
 
 
 class Conditional(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         condition: "Expression",
-        trueExpression: "Expression",
-        falseExpression: "Expression",
-    ):
-        super().__init__("Conditional")
-        self.condition = condition
-        self.trueExpression = trueExpression
-        self.falseExpression = falseExpression
+        true_expression: "Expression",
+        false_expression: "Expression",
+    ) -> None:
+        self.condition: "Expression" = condition
+        self.trueExpression: "Expression" = true_expression
+        self.falseExpression: "Expression" = false_expression
 
 
 class IndexAccess(BaseASTNode):
-    def __init__(self, base: "Expression", index: "Expression"):
-        super().__init__("IndexAccess")
-        self.base = base
-        self.index = index
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, base: "Expression", index: "Expression") -> None:
+        self.base: "Expression" = base
+        self.index: "Expression" = index
 
 
 class IndexRangeAccess(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         base: "Expression",
-        indexStart: Optional["Expression"] = None,
-        indexEnd: Optional["Expression"] = None,
-    ):
-        super().__init__("IndexRangeAccess")
-        self.base = base
-        self.indexStart = indexStart
-        self.indexEnd = indexEnd
+        index_start: Optional["Expression"] = None,
+        index_end: Optional["Expression"] = None,
+    ) -> None:
+        self.base: "Expression" = base
+        self.index_start: Optional["Expression"] = index_start
+        self.index_end: Optional["Expression"] = index_end
 
 
 class MemberAccess(BaseASTNode):
-    def __init__(self, expression: "Expression", memberName: str):
-        super().__init__("MemberAccess")
-        self.expression = expression
-        self.memberName = memberName
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, expression: "Expression", member_name: str) -> None:
+        self.expression: "Expression" = expression
+        self.member_name: str = member_name
 
 
 class HexNumber(BaseASTNode):
-    def __init__(self, value: str):
-        super().__init__("HexNumber")
-        self.value = value
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, value: str) -> None:
+        self.value: str = value
 
 
 class DecimalNumber(BaseASTNode):
-    def __init__(self, value: str):
-        super().__init__("DecimalNumber")
-        self.value = value
+    """
+    #TODO: add docstring
+    """
+
+    def __init__(self, value: str) -> None:
+        self.value: str = value
 
 
 class NameValueList(BaseASTNode):
+    """
+    #TODO: add docstring
+    """
+
     def __init__(
         self,
         names: List[str],
         identifiers: List["Identifier"],
         arguments: List["Expression"],
-    ):
-        super().__init__("NameValueList")
-        self.names = names
-        self.identifiers = identifiers
-        self.arguments = arguments
-
-
-from typing import TypeVar, Dict, Callable
-
-# Define a dictionary mapping AST node types to their corresponding types
-# ASTNodeTypeString = str  # Replace with actual string union of node types
-# U = TypeVar("U", bound="ASTNode")
-# ASTMap = Dict[ASTNodeTypeString, U]
-
-# # Define a dictionary type for visitor functions
-# ASTVisitorEnter = Dict[ASTNodeTypeString, Callable[[U, Optional["ASTNode"]], None]]
-# ASTVisitorExit = Dict[ASTNodeTypeString, Callable[[U, Optional["ASTNode"]], None]]
-
-# # Combine visitor dictionaries into a single visitor object
-# class ASTVisitor:
-#     def __init__(self, enter: ASTVisitorEnter = {}, exit: ASTVisitorExit = {}):
-#         self.enter = enter
-#         self.exit = exit
-
-# Create a function to check type consistency
-# def checkTypes():
-#     ast_node_type: str = ""
-#     ast_node_type_string: ASTNodeTypeString = ""
-#     ast_visitor_enter_key: str = ""
-
-#     assign_ast_node_type: str = ast_node_type_string
-#     assign_ast_node_type = ast_visitor_enter_key
-
-#     assign_ast_node_type_string: ASTNodeTypeString = ast_node_type
-#     assign_ast_node_type_string = ast_visitor_enter_key
-
-#     assign_ast_visitor_enter_key: str = ast_node_type
-#     assign_ast_visitor_enter_key = ast_node_type_string
-
-#     ast_node_type_exit: str = ""
-#     ast_node_type_string_exit: ASTNodeTypeString = ""
-#     ast_visitor_enter_key_exit: str = ""
-#     ast_visitor_exit_key: str = ""
-
-#     let_ast_node_type_exit: str = ast_node_type_string_exit
-#     let_ast_node_type_exit = ast_visitor_enter_key_exit
-#     let_ast_node_type_exit = ast_visitor_exit_key
-
-#     assign_ast_node_type_string_exit: ASTNodeTypeString = ast_node_type_exit
-#     assign_ast_node_type_string_exit = ast_visitor_enter_key_exit
-#     assign_ast_node_type_string_exit = ast_visitor_exit_key
-
-#     assign_ast_visitor_enter_key_exit: str = ast_node_type_exit
-#     assign_ast_visitor_enter_key_exit = ast_node_type_string_exit
-#     assign_ast_visitor_enter_key_exit = ast_visitor_exit_key
-
-#     assign_ast_visitor_exit_key: str = ast_node_type_exit
-#     assign_ast_visitor_exit_key = ast_node_type_string_exit
-#     assign_ast_visitor_exit_key = ast_visitor_enter_key_exit
-
-# # Call the type checking function
-# checkTypes()
-
-from typing import List, Optional, Union
+    ) -> None:
+        self.names: List[str] = names
+        self.identifiers: List["Identifier"] = identifiers
+        self.arguments: List["Expression"] = arguments
 
 
 class ASTNode:
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
+# TODO: make enum
 class AssemblyItem(ASTNode):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
+# TODO: make enum
 class AssemblyExpression(AssemblyItem):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
+# TODO: make enum
 class Expression(ASTNode):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
+# TODO: make enum
 class PrimaryExpression(Expression):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
+# TODO: make enum
 class Statement(ASTNode):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
+# TODO: make enum
 class SimpleStatement(Statement):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 
@@ -977,6 +1185,10 @@ class SimpleStatement(Statement):
 
 
 class TypeName(ASTNode):
+    """
+    #TODO: add docstring
+    """
+
     pass
 
 

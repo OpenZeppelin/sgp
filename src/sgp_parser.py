@@ -11,6 +11,7 @@ from .parser.SolidityParser import SolidityParser
 from .sgp_visitor import SGPVisitorOptions, SGPVisitor
 from .sgp_error_listener import SGPErrorListener
 from .tokens import build_token_list
+from .utils import string_from_snake_to_camel_case
 
 class ParserError(Exception):
     def __init__(self, errors):
@@ -19,7 +20,13 @@ class ParserError(Exception):
         self.message = f"{error['message']} ({error['line']}:{error['column']})"
         self.errors = errors
 
-def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions(), dump_json: bool = False, dump_path: str = "./out") -> Dict:
+
+def parse(
+    input_string: str,
+    options: SGPVisitorOptions = SGPVisitorOptions(),
+    dump_json: bool = False,
+    dump_path: str = "./out",
+) -> Dict:
     input_stream = ANTLRInputStream(input_string)
     lexer = SolidityLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
@@ -39,7 +46,7 @@ def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions(), d
     if ast is None:
         raise Exception("AST was not generated")
 
-    #TODO: token_list what is this for?
+    # TODO: token_list what is this for?
     token_list = []
     if options.tokens:
         token_list = build_token_list(token_stream.getTokens(), options)
@@ -50,13 +57,15 @@ def parse(input_string: str, options: SGPVisitorOptions = SGPVisitorOptions(), d
     if options.errors_tolerant and listener.has_errors():
         ast["errors"] = listener.getErrors()
 
-    #TODO: options.tokens what is this for?
+    # TODO: options.tokens what is this for?
     if options.tokens:
         ast["tokens"] = token_list
 
     if dump_json:
         os.makedirs(dump_path, exist_ok=True)
         with open(os.path.join(dump_path, "ast.json"), "w") as f:
-            s = simplejson.dumps(ast, default=lambda obj: obj.__dict__)
+            s = simplejson.dumps(
+                ast, default=lambda obj: { string_from_snake_to_camel_case(k): v for k, v in obj.__dict__.items()}
+            )
             f.write(s)
     return ast
