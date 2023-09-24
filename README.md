@@ -1,6 +1,4 @@
-[![Lint and test + coverage](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml/badge.svg?branch=main)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml)
-
-[![ANTLR4 test](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml/badge.svg)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml)
+[![Lint and test + coverage](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml/badge.svg?branch=main)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml) [![ANTLR4 test](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml/badge.svg)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml)
 
 # Solidity Language Grammar ANTLR Python parser
 
