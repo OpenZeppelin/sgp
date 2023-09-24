@@ -20,7 +20,9 @@ The output result can be found in the [./out](./out) directory
 
 ## Tests
 
-Run [run-tests.sh](./run-tests.sh) to parse [test.sol](./test.sol).
+Run:
+- `python -m coverage run -m unittest discover -v && python -m coverage report` for the `Python` tests
+- [run-tests.sh](./test/test_parsing/run-tests.sh) to execute `antlr4` parse testing
 
 ## License
 
