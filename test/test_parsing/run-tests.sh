@@ -4,7 +4,7 @@ ANTLR_JAR="antlr4.jar"
 
 GRAMMAR="Solidity"
 START_RULE="sourceUnit"
-TEST_FILE="test.sol"
+TEST_FILE="./test/test_parsing/test.sol"
 ERROR_PATTERN="mismatched|extraneous|no viable|missing"
 
 if [ ! -e "$ANTLR_JAR" ]; then
