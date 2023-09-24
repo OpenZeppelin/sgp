@@ -10,6 +10,7 @@ from .parser.SolidityParser import SolidityParser
 
 from .sgp_visitor import SGPVisitorOptions, SGPVisitor
 from .sgp_error_listener import SGPErrorListener
+from .ast_node_types import SourceUnit
 from .tokens import build_token_list
 from .utils import string_from_snake_to_camel_case
 
@@ -31,7 +32,7 @@ def parse(
     options: SGPVisitorOptions = SGPVisitorOptions(),
     dump_json: bool = False,
     dump_path: str = "./out",
-) -> Dict:
+) -> SourceUnit:
     """
     #TODO: add docstring
     """
@@ -50,9 +51,9 @@ def parse(
     source_unit = parser.sourceUnit()
 
     ast_builder = SGPVisitor(options)
-    ast = ast_builder.visit(source_unit)
+    source_unit: SourceUnit = ast_builder.visit(source_unit)
 
-    if ast is None:
+    if source_unit is None:
         raise Exception("AST was not generated")
 
     # TODO: token_list what is this for?
@@ -64,21 +65,21 @@ def parse(
         raise ParserError(errors=listener.getErrors())
 
     if options.errors_tolerant and listener.has_errors():
-        ast["errors"] = listener.getErrors()
+        source_unit["errors"] = listener.getErrors()
 
     # TODO: options.tokens what is this for?
     if options.tokens:
-        ast["tokens"] = token_list
+        source_unit["tokens"] = token_list
 
     if dump_json:
         os.makedirs(dump_path, exist_ok=True)
         with open(os.path.join(dump_path, "ast.json"), "w") as f:
             s = simplejson.dumps(
-                ast,
+                source_unit,
                 default=lambda obj: {
                     string_from_snake_to_camel_case(k): v
                     for k, v in obj.__dict__.items()
                 },
             )
             f.write(s)
-    return ast
+    return source_unit
