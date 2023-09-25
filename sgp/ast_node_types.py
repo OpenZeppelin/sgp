@@ -658,7 +658,7 @@ class ElementaryTypeName(BaseASTNode):
 
     def __init__(self, name: str, state_mutability: Optional[str] = None) -> None:
         self.name: str = name
-        self.stateMutability: Optional[str] = state_mutability  # TODO: make enum
+        self.state_mutability: Optional[str] = state_mutability  # TODO: make enum
 
 
 class FunctionCall(BaseASTNode):
@@ -696,7 +696,7 @@ class AssemblyCall(BaseASTNode):
     def __init__(
         self, function_name: str, arguments: List["AssemblyExpression"]
     ) -> None:
-        self.functionName: str = function_name
+        self.function_name: str = function_name
         self.arguments: List["AssemblyExpression"] = arguments
 
 
@@ -856,7 +856,7 @@ class TupleExpression(BaseASTNode):
         self, components: List[Union[BaseASTNode, None]], isArray: bool
     ) -> None:
         self.components: List[Union[BaseASTNode, None]] = components
-        self.isArray: bool = isArray
+        self.is_array: bool = isArray
 
 
 class NameValueExpression(BaseASTNode):
@@ -906,7 +906,7 @@ class StringLiteral(BaseASTNode):
     def __init__(self, value: str, parts: List[str], is_unicode: List[bool]) -> None:
         self.value: str = value
         self.parts: List[str] = parts
-        self.isUnicode: List[bool] = is_unicode
+        self.is_unicode: List[bool] = is_unicode
 
 
 class Identifier(BaseASTNode):
@@ -995,8 +995,8 @@ class Conditional(BaseASTNode):
         false_expression: "Expression",
     ) -> None:
         self.condition: "Expression" = condition
-        self.trueExpression: "Expression" = true_expression
-        self.falseExpression: "Expression" = false_expression
+        self.true_expression: "Expression" = true_expression
+        self.false_expression: "Expression" = false_expression
 
 
 class IndexAccess(BaseASTNode):
