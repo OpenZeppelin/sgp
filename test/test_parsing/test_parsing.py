@@ -3,8 +3,8 @@ import pathlib
 import os
 import simplejson
 
-from src.sgp_parser import parse
-from src.utils import string_from_snake_to_camel_case
+from sgp.sgp_parser import parse
+from sgp.utils import string_from_snake_to_camel_case
 
 class TestParsing(unittest.TestCase):
 

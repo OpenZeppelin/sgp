@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sgp"
+version = "0.0.1"
+authors = [
+    { name="Georgii Plotnikov", email="accembler@gmail.com" },
+]
+description = "Solidity ANTLR4 grammar Python parser"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "antlr4-python3-runtime == 4.13.1",
+    "coverage == 7.3.1",
+    "simplejson == 3.19.1",
+    "typing == 3.7.4.3",
+    "typing_extensions == 4.8.0"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/0xGeorgii/sgp"
+"Bug Tracker" = "https://github.com/0xGeorgii/sgp/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "sgp*",
+]
+
+[tool.black]
+line-length = 88
+exclude = '''
+(
+    /(
+        \.git
+        | \.venv
+        | \.env
+        | \.eggs
+        | \.mypy_cache
+        | \.pytest_cache
+        | _build
+        | buck-out
+        | build
+        | dist
+        | venv
+    )/
+)
+'''
