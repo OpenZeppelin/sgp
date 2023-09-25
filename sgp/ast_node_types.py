@@ -1,25 +1,27 @@
 from typing import Any, List, Optional, Tuple, Union, Dict
 
 
+class Position:
+    """
+    Contains the cursor position (line and column) in the source code.
+    """
+    def __init__(self, line: int, col: int) -> None:
+        self.line: int = line
+        self.column: int = col
+
 class Location:
     """
     Contains the location (start line/column & end line/column) of a node in the source code.
 
     Attributes:
     ----------
-    start: Dict[str, int] - The line and column of the start of the node
-    end: Dict[str, int] - The line and column of the end of the node
+    start: Position - The line and column of the start of the node
+    end: Position - The line and column of the end of the node
     """
 
     def __init__(self, start: Tuple[int, int], end: Tuple[int, int]) -> None:
-        self.start: Dict[str, int] = {
-            "line": start[0],
-            "column": start[1],
-        }
-        self.end: Dict[str, int] = {
-            "line": end[0],
-            "column": end[1],
-        }
+        self.start: Position = Position(start[0], start[1])
+        self.end: Position = Position(end[0], end[1])
 
 
 class Range:
