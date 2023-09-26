@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgp"
-version = "0.0.1"
+version = "0.8.21"
 authors = [
     { name="Georgii Plotnikov", email="accembler@gmail.com" },
 ]

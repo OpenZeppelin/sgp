@@ -3,7 +3,22 @@ from typing import Any
 
 def string_from_snake_to_camel_case(input: str) -> str:
     """
-    #TODO: add docstring
+    Convert a string from snake_case to camelCase.
+
+    Parameters
+    ----------
+    input : str - The string to convert.
+
+    Returns
+    -------
+    str - The converted string.
+
+    Examples
+    --------
+    >>> string_from_snake_to_camel_case("hello_world")
+    "helloWorld"
+    >>> string_from_snake_to_camel_case("helloWorld")
+    "helloWorld"
     """
 
     if not input:

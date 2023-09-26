@@ -57,7 +57,7 @@ def get_token_type_map(tokens: str) -> Dict[int, str]:
 
     return token_map
 
-#TODO: what does this do?
+#TODO: sort it out
 def build_token_list(tokens_arg: List[Dict[str, Any]], options: Dict[str, Any]) -> List[Dict[str, Any]]:
     token_types = get_token_type_map(tokens_arg)
     result = []

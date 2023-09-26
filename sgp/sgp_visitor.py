@@ -24,14 +24,14 @@ class SGPVisitorOptions:
 
         Parameters
         ----------
-        tokens : bool, optional, default False - #TODO: what is this for?
+        tokens : bool, optional, default False - #TODO: sort it out
         tolerant : bool, optional, default True - suppress not critical [CST](https://en.wikipedia.org/wiki/Parse_tree) traversing errors
         range : bool, optional, default True - add range (start, end offset) information to AST nodes
         loc : bool, optional, default True - add line/column location information to AST nodes
         """
         self.range: bool = range
         self.loc: bool = loc
-        self.tokens: bool = tokens  # TODO: what is this for?
+        self.tokens: bool = tokens  # TODO: sort it out
         self.errors_tolerant: bool = tolerant
 
 

@@ -17,10 +17,15 @@ from .utils import string_from_snake_to_camel_case
 
 class ParserError(Exception):
     """
-    #TODO: add docstring
+    An exception raised when the parser encounters an error.            
     """
 
     def __init__(self, errors) -> None:
+        """
+        Parameters
+        ----------
+        errors : List[Dict[str, Any]] - A list of errors encountered by the parser.        
+        """
         super().__init__()
         error = errors[0]
         self.message = f"{error['message']} ({error['line']}:{error['column']})"
@@ -34,7 +39,18 @@ def parse(
     dump_path: str = "./out",
 ) -> SourceUnit:
     """
-    #TODO: add docstring
+    Parse a Solidity source string into an AST.
+
+    Parameters
+    ----------
+    input_string : str - The Solidity source string to parse.
+    options : SGPVisitorOptions - Options to pass to the parser.
+    dump_json : bool - Whether to dump the AST as a JSON file.
+    dump_path : str - The path to dump the AST JSON file to.
+
+    Returns
+    -------
+    SourceUnit - The root of an AST of the Solidity source string.    
     """
 
     input_stream = ANTLRInputStream(input_string)
@@ -59,7 +75,7 @@ def parse(
         if source_unit is None:
             raise Exception("AST was not generated")
 
-    # TODO: token_list what is this for?
+    # TODO: sort it out
     token_list = []
     if options.tokens:
         token_list = build_token_list(token_stream.getTokens(), options)
@@ -70,7 +86,7 @@ def parse(
     if options.errors_tolerant and listener.has_errors():
         source_unit.errors = listener.get_errors()
 
-    # TODO: options.tokens what is this for?
+    # TODO: sort it out
     if options.tokens:
         source_unit["tokens"] = token_list
 

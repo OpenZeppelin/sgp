@@ -2,16 +2,12 @@
 
 # Solidity Grammar Parser
 
-TBD:
+**SGP** - is a `Python` package that allows to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) for a given [Solidity](https://solidity.readthedocs.io/)  source code.
 
-The [ANTLR (ANother Tool for Language Recognition) ](https://www.antlr.org/) grammar for [Solidity](https://solidity.readthedocs.io/) is maintained in [Solidity.g4](./Solidity.g4).
+## Kudos
 
-TBD:
-
-https://github.com/solidity-parser/parser
-https://github.com/solidity-parser/antlr
-
-This is a fork of [@solidity-parser](solidity-parser/antlr) with some amendments in the [build.sh]() script that automatically installs all required dependencies and uses ANTLR to generate `Python` parser.
+- The original grammar [Solidity.g4](./Solidity.g4) was developed and maintained by [solidity-parser-antlr](https://github.com/solidity-parser/antlr).
+- The node types system and AST visitor is based on [solidity-parser-parser](https://github.com/solidity-parser/parser).
 
 ## Build
 
