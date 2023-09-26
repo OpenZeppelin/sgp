@@ -1,4 +1,4 @@
-name: Upload Python Package
+name: Publish package to PyPi
 
 on: [workflow_dispatch]
   
