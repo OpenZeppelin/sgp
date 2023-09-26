@@ -51,10 +51,13 @@ def parse(
     source_unit = parser.sourceUnit()
 
     ast_builder = SGPVisitor(options)
-    source_unit: SourceUnit = ast_builder.visit(source_unit)
-
-    if source_unit is None:
+    try:
+        source_unit: SourceUnit = ast_builder.visit(source_unit)
+    except Exception as e:
         raise Exception("AST was not generated")
+    else:
+        if source_unit is None:
+            raise Exception("AST was not generated")
 
     # TODO: token_list what is this for?
     token_list = []
@@ -62,10 +65,10 @@ def parse(
         token_list = build_token_list(token_stream.getTokens(), options)
 
     if not options.errors_tolerant and listener.has_errors():
-        raise ParserError(errors=listener.getErrors())
+        raise ParserError(errors=listener.get_errors())
 
     if options.errors_tolerant and listener.has_errors():
-        source_unit["errors"] = listener.getErrors()
+        source_unit.errors = listener.get_errors()
 
     # TODO: options.tokens what is this for?
     if options.tokens:

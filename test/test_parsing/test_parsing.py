@@ -21,7 +21,7 @@ class TestParsing(unittest.TestCase):
             test_content = f.read()
         self.assertNotEqual(test_content, "")
 
-        res = parse(test_content)
+        res = parse(test_content, dump_json=True)
         ast_actual = simplejson.dumps(
                 res,
                 default=lambda obj: {

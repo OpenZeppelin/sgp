@@ -3,6 +3,7 @@ from typing import Any, List, Optional, Tuple, Union
 from antlr4.tree.Tree import ErrorNode
 from antlr4 import ParserRuleContext
 from antlr4.tree.Tree import ParseTree
+from antlr4.error.Errors import RecognitionException
 
 from .parser.SolidityParser import SolidityParser as SP
 from .parser.SolidityVisitor import SolidityVisitor
@@ -49,9 +50,18 @@ class SGPVisitor(SolidityVisitor):
     def visitSourceUnit(self, ctx: SP.SourceUnitContext) -> SourceUnit:
         children = [child for child in ctx.children if not isinstance(child, ErrorNode)]
 
-        node = SourceUnit(
-            children=[self.visit(child) for child in children[:-1]]
-        )
+        # node = SourceUnit(
+        #     children=[self.visit(child) for child in children[:-1]]
+        # )
+        parsed_children = []
+        for child in children[:-1]:
+            try:
+                n = self.visit(child)
+                parsed_children.append(n)
+            except Exception as e:
+                raise RecognitionException(str(e), None, None, ctx)
+
+        node = SourceUnit(children=parsed_children)
 
         return self._add_meta(node, ctx)
 
@@ -1083,17 +1093,13 @@ class SGPVisitor(SolidityVisitor):
 
         return self._add_meta(node, ctx)
 
-    def visit_primary_expression(self, ctx) -> Union[PrimaryExpression, Any]:
+    def visitPrimaryExpression(self, ctx) -> Union[PrimaryExpression, Any]:
         if ctx.BooleanLiteral():
-            node = {
-                "type": "BooleanLiteral",
-                "value": self._to_text(ctx.BooleanLiteral()) == "true",
-            }
-
+            node = BooleanLiteral(value=self._to_text(ctx.BooleanLiteral()) == "true")
             return self._add_meta(node, ctx)
 
         if ctx.hexLiteral():
-            return self.visit_hex_literal(ctx.hexLiteral())
+            return self.visitHexLiteral(ctx.hexLiteral())
 
         if ctx.stringLiteral():
             fragments = ctx.stringLiteral().StringLiteralFragment()
@@ -1109,36 +1115,25 @@ class SGPVisitor(SolidityVisitor):
                 single_quotes = text[0] == """"""
                 text_without_quotes = text[1:-1]
                 if single_quotes:
-                    value = text_without_quotes.replace(r"\\" ", " "")
+                    value = text_without_quotes.replace(r"'", "")
                 else:
-                    value = text_without_quotes.replace(r"\\" ", " "")
+                    value = text_without_quotes.replace(r'"', "")
 
                 fragments_info.append({"value": value, "is_unicode": is_unicode})
 
             parts = [x["value"] for x in fragments_info]
-
-            node = {
-                "type": "StringLiteral",
-                "value": "".join(parts),
-                "parts": parts,
-                "isUnicode": [x["is_unicode"] for x in fragments_info],
-            }
-
+            node = StringLiteral(value="".join(parts), parts=parts, is_unicode=[x["is_unicode"] for x in fragments_info])
             return self._add_meta(node, ctx)
 
         if ctx.numberLiteral():
-            return self.visit_number_literal(ctx.numberLiteral())
+            return self.visitNumberLiteral(ctx.numberLiteral())
 
         if ctx.TypeKeyword():
-            node = {
-                "type": "Identifier",
-                "name": "type",
-            }
-
+            node = Identifier(name="type")
             return self._add_meta(node, ctx)
 
         if ctx.typeName():
-            return self.visit_type_name(ctx.typeName())
+            return self.visitTypeName(ctx.typeName())
 
         return self.visit(ctx.getChild(0))
 
@@ -1608,7 +1603,7 @@ class SGPVisitor(SolidityVisitor):
         return source_location
 
     def _range(self, ctx) -> Tuple[int, int]:
-        return Range(ctx.start.start, ctx.stop.stop)
+        return Range(ctx.start.start, ctx.stop.stop if ctx.stop else ctx.start.stop)
 
     def _add_meta(
         self, node: Union[BaseASTNode, NameValueList], ctx

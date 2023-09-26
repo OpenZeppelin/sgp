@@ -77,6 +77,7 @@ class SourceUnit(BaseASTNode):
 
     def __init__(self, children: List[BaseASTNode]) -> None:
         self.children = children
+        self.errors = []
 
 
 class ContractDefinition(BaseASTNode):
