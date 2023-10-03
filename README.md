@@ -1,4 +1,4 @@
-[![Lint and test + coverage](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml/badge.svg?branch=main)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/lint-and-test.yml) [![ANTLR4 test](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml/badge.svg)](https://github.com/GeorgePlotnikov/sgp/actions/workflows/antlr4-test.yml)
+[![Lint and test + coverage](https://github.com/OpenZeppelin/sgp/actions/workflows/lint-and-test.yml/badge.svg?branch=main)](https://github.com/OpenZeppelin/sgp/actions/workflows/lint-and-test.yml) [![ANTLR4 test](https://github.com/OpenZeppelin/sgp/actions/workflows/antlr4-test.yml/badge.svg)](https://github.com/OpenZeppelin/sgp/actions/workflows/antlr4-test.yml)
 
 # Solidity Grammar Parser
 
@@ -7,7 +7,7 @@
 ## Kudos
 
 - The original grammar [Solidity.g4](./Solidity.g4) was developed and maintained by [solidity-parser-antlr](https://github.com/solidity-parser/antlr).
-- The node types system and AST visitor is based on [solidity-parser-parser](https://github.com/solidity-parser/parser).
+- The node types system and AST visitor are based on [solidity-parser-parser](https://github.com/solidity-parser/parser).
 
 ## Build
 
