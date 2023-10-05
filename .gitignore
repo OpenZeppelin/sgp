@@ -162,3 +162,5 @@ cython_debug/
 
 out/
 .vscode/
+lib64
+pyvenv.cfg
