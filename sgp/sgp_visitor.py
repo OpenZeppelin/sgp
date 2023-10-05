@@ -1,4 +1,5 @@
 from typing import Any, List, Optional, Tuple, Union
+from typing_extensions import override
 
 from antlr4.tree.Tree import ErrorNode
 from antlr4 import ParserRuleContext
@@ -41,11 +42,21 @@ class SGPVisitor(SolidityVisitor):
         self._current_contract = None
         self._options = options
 
+    @override
     def defaultResult(self):
         return {}
 
+    @override
     def aggregateResult(self, aggregate, nextResult):
         return nextResult
+    
+    @override
+    def visitErrorNode(self, node):
+        return None
+    
+    @override
+    def visitTerminal(self, node):
+        return self.defaultResult()
 
     def visitSourceUnit(self, ctx: SP.SourceUnitContext) -> SourceUnit:
         children = [child for child in ctx.children if not isinstance(child, ErrorNode)]
@@ -198,6 +209,8 @@ class SGPVisitor(SolidityVisitor):
     def visitSimpleStatement(
         self, ctx: SP.SimpleStatementContext
     ) -> SimpleStatement:
+        if ctx.children == None:
+            return self.visitErrorNode(ctx.start)
         return self.visit(ctx.getChild(0))  # Assuming the child type is SimpleStatement
 
     def visitEventDefinition(
@@ -232,7 +245,12 @@ class SGPVisitor(SolidityVisitor):
         return self._add_meta(node, ctx)
 
     def visitBlock(self, ctx: SP.BlockContext) -> Block:
-        node = Block(statements=[self.visitStatement(x) for x in ctx.statement()])
+        statements = []
+        for x in ctx.statement():
+            s = self.visitStatement(x)
+            if s:
+                statements.append(s)
+        node = Block(statements=statements)
 
         return self._add_meta(node, ctx)
 
@@ -1093,7 +1111,7 @@ class SGPVisitor(SolidityVisitor):
 
         return self._add_meta(node, ctx)
 
-    def visitPrimaryExpression(self, ctx) -> Union[PrimaryExpression, Any]:
+    def visitPrimaryExpression(self, ctx: SP.PrimaryExpressionContext) -> Union[PrimaryExpression, Any]:
         if ctx.BooleanLiteral():
             node = BooleanLiteral(value=self._to_text(ctx.BooleanLiteral()) == "true")
             return self._add_meta(node, ctx)
@@ -1134,6 +1152,9 @@ class SGPVisitor(SolidityVisitor):
 
         if ctx.typeName():
             return self.visitTypeName(ctx.typeName())
+
+        if ctx.children == None:
+            return self.visitErrorNode(ctx.start)
 
         return self.visit(ctx.getChild(0))
 
