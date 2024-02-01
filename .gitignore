@@ -164,3 +164,5 @@ out/
 .vscode/
 lib64
 pyvenv.cfg
+antlr4.jar
+src/
