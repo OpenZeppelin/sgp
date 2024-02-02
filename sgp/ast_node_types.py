@@ -5,9 +5,11 @@ class Position:
     """
     Contains the cursor position (line and column) in the source code.
     """
+
     def __init__(self, line: int, col: int) -> None:
         self.line: int = line
         self.column: int = col
+
 
 class Location:
     """
@@ -385,7 +387,7 @@ class StateVariableDeclarationVariable(VariableDeclaration):
         self,
         is_immutable: bool,
         override: Optional[List["UserDefinedTypeName"]] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.is_immutable: bool = is_immutable
@@ -931,9 +933,7 @@ BINARY_OP_VALUES = (
     ">>",
     "&&",
     "||",
-    ",,",
     "&",
-    ",",
     "^",
     "<",
     ">",
@@ -942,7 +942,6 @@ BINARY_OP_VALUES = (
     "==",
     "!=",
     "=",
-    ",=",
     "^=",
     "&=",
     "<<=",
