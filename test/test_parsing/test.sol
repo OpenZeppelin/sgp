@@ -995,7 +995,7 @@ contract FallbackWithArgs {
  * Issues
  */
 
-// issue #12
+// issue https://github.com/solidity-parser/parser/issues/12
 contract C {
   function f() public {
     assembly {
@@ -1005,7 +1005,7 @@ contract C {
   }
 }
 
-// issue #54
+// issue https://github.com/solidity-parser/parser/issues/54
 contract Foo {
   function f() public {
     (uint[][] memory x, uint y) = abi.decode(data, (uint[][], uint));
@@ -1015,15 +1015,15 @@ contract Foo {
   }
 }
 
-// issue #55
+// issue https://github.com/solidity-parser/parser/issues/55
 pragma solidity *;
 
-// issue #59
+// issue https://github.com/solidity-parser/parser/issues/59
 contract C {
   using L.Lib for uint;
 }
 
-// issue #60
+// issue https://github.com/solidity-parser/parser/issues/60
 contract AssemblyAssingment {
     function foo() public pure {
         assembly {
@@ -1039,7 +1039,7 @@ contract AssemblyAssingment {
     }
 }
 
-// issue #61
+// issue https://github.com/solidity-parser/parser/issues/61
 type Fixed18 is int256;
 using Fixed18Lib for Fixed18 global;
 using {plusOne, minusOne} for RestrictedNumber global;
@@ -1071,3 +1071,6 @@ contract NamedMappingParams {
 // solc 0.8.19, user defined operators
 using { add as + } for Fixed18 global;
 using { add as +, sub as - } for Fixed18 global;
+
+// https://github.com/OpenZeppelin/sgp/issues/7
+function test() public returns(address payable) {}

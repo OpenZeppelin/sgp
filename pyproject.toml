@@ -4,10 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "solidity-grammar-parser"
-version = "0.0.2"
-authors = [
-    { name="Georgii Plotnikov", email="accembler@gmail.com" },
-]
+version = "0.0.3"
+authors = [{ name = "Georgii Plotnikov", email = "accembler@gmail.com" }]
 description = "Solidity ANTLR4 grammar Python parser"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,7 +19,7 @@ dependencies = [
     "coverage == 7.3.1",
     "simplejson == 3.19.1",
     "typing == 3.7.4.3",
-    "typing_extensions == 4.8.0"
+    "typing_extensions == 4.8.0",
 ]
 
 [project.urls]
@@ -30,9 +28,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = [
-    "sgp*",
-]
+include = ["sgp*"]
 
 [tool.black]
 line-length = 88
