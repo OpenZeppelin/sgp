@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "solidity-grammar-parser"
+name = "openzeppelin-solidity-grammar-parser"
 version = "0.0.3"
 authors = [{ name = "Georgii Plotnikov", email = "accembler@gmail.com" }]
 description = "Solidity ANTLR4 grammar Python parser"
