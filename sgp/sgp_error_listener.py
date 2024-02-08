@@ -2,6 +2,7 @@ from typing import List
 from typing_extensions import override
 from antlr4.error.ErrorListener import ErrorListener
 
+
 class SGPError:
     def __init__(self, message, line, column):
         self.message = message
@@ -10,6 +11,7 @@ class SGPError:
 
     def __str__(self):
         return f"{self.message} ({self.line}:{self.column})"
+
 
 class SGPErrorListener(ErrorListener):
     def __init__(self):
