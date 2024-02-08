@@ -25,3 +25,8 @@ function test() public returns(address payable) {}
 Now, these cases are handled correctly after the bug in the version `0.0.3`.
 
 ### [CHANGELOG.md](/CHANGELOG.md) added
+
+### [Onboard `ruff](https://github.com/OpenZeppelin/sgp/pull/10)
+
+- Use `ruff` for the `py` files check and formatting.
+- Added a `ruff_helper.sh` script
