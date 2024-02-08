@@ -1392,7 +1392,9 @@ class SGPVisitor(SolidityVisitor):
 
         return self._add_meta(node, ctx)
 
-    def visitAssemblyLiteral(self, ctx: SP.AssemblyLiteralContext) -> Union[
+    def visitAssemblyLiteral(
+        self, ctx: SP.AssemblyLiteralContext
+    ) -> Union[
         StringLiteral,
         BooleanLiteral,
         DecimalNumber,

@@ -1,5 +1,6 @@
 import sgp_parser
 
+
 def main():
     input = """
 // SPDX-License-Identifier: MIT
@@ -19,5 +20,6 @@ contract X {
     except Exception as e:
         print(e)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

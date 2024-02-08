@@ -1,6 +1,3 @@
-from typing import Any
-
-
 def string_from_snake_to_camel_case(input: str) -> str:
     """
     Convert a string from snake_case to camelCase.

@@ -1,6 +1,5 @@
 import os
 import simplejson
-from typing import Dict
 
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.InputStream import InputStream as ANTLRInputStream
@@ -17,14 +16,14 @@ from .utils import string_from_snake_to_camel_case
 
 class ParserError(Exception):
     """
-    An exception raised when the parser encounters an error.            
+    An exception raised when the parser encounters an error.
     """
 
     def __init__(self, errors) -> None:
         """
         Parameters
         ----------
-        errors : List[Dict[str, Any]] - A list of errors encountered by the parser.        
+        errors : List[Dict[str, Any]] - A list of errors encountered by the parser.
         """
         super().__init__()
         error = errors[0]
@@ -50,7 +49,7 @@ def parse(
 
     Returns
     -------
-    SourceUnit - The root of an AST of the Solidity source string.    
+    SourceUnit - The root of an AST of the Solidity source string.
     """
 
     input_stream = ANTLRInputStream(input_string)
@@ -69,7 +68,7 @@ def parse(
     ast_builder = SGPVisitor(options)
     try:
         source_unit: SourceUnit = ast_builder.visit(source_unit)
-    except Exception as e:
+    except Exception:
         raise Exception("AST was not generated")
     else:
         if source_unit is None:
