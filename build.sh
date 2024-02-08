@@ -19,5 +19,5 @@ if [ ! -e "$ANTLR_JAR" ]; then
   curl https://www.antlr.org/download/antlr-4.13.1-complete.jar -o "$ANTLR_JAR"
 fi
 
-java -jar $ANTLR_JAR -Dlanguage=Python3 Solidity.g4 -visitor -o out/
+java -jar $ANTLR_JAR -Dlanguage=Python3 Solidity.g4 -visitor -o sgp/parser/
 
