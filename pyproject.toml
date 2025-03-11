@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openzeppelin-solidity-grammar-parser"
-version = "0.0.4"
+version = "0.0.5"
 authors = [{ name = "Georgii Plotnikov", email = "accembler@gmail.com" }]
 description = "Solidity ANTLR4 grammar Python parser"
 readme = "README.md"
